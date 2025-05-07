@@ -1,0 +1,96 @@
+{% extends "base.html" %}
+{% load django_bootstrap5 %}
+{% block title %}Запись на получение{% endblock %}
+
+{% block content %}
+{% load django_bootstrap5 %}
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Список записей на получение</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+</head>
+<body>
+    <div class="container py-4">
+        <h1>Записи на получение</h1>
+
+        <a href="{% url 'Queue:newrecipient_create' %}" class="btn btn-primary mb-3"><i class="bi bi-plus-circle"></i> Добавить запись</a>
+
+        <form method="get">
+        {% bootstrap_form filter_form %}
+        <button type="submit" class="btn btn-primary">Отфильтровать</button>
+        <a href="{% url 'Queue:newrecipient_list' %}" class="btn btn-secondary">Сбросить</a>  {# Ссылка для сброса фильтра #}
+    </form>
+
+        {% if recipients %}
+            <div class="table-responsive">
+                <table class="table table-striped table-hover">
+                    <thead>
+                        <tr>
+                            <th style="text-align: center;">№</th>
+                            <th style="text-align: center;">Статус</th>
+                            <th style="text-align: center;">Дата и время</th>
+                            <th style="text-align: center;">Запрос</th>
+                            <th style="text-align: center;">Количество</th>
+                            <th style="text-align: center;">ОГВ</th>
+                            <th style="text-align: center;">Действия</th>
+                            <th style="text-align: center;">Примечание</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for recipient in recipients %}
+                            <tr>
+                                <td style="text-align: center;">{{ forloop.counter }}</td>  {# Отображаем номер строки #}
+                                <td style="text-align: center;">{{ recipient.get_status_display }}</td>
+                                <td style="text-align: center;">{{ recipient.date|default_if_none:"__.__.____" }} {{ recipient.receiving_time|default_if_none:"__:__" }}</td>
+                                <td style="text-align: center;">{{ recipient.number_naumen|default_if_none:"-" }}</td>
+                                <td style="text-align: center;">{{ recipient.amount }}</td>
+                                <td>{{ recipient.ogv }}</td>
+                                <td style="text-align: center;">
+                                    <a href="{% url 'Queue:newrecipient_detail' recipient.pk %}" class="btn btn-sm btn-info"><i class="bi bi-eye"></i></a><br>
+                                    <a href="{% url 'Queue:newrecipient_update' recipient.pk %}" class="btn btn-sm btn-warning"><i class="bi bi-pencil"></i></a><br>
+                                    <a href="{% url 'Queue:newrecipient_delete' recipient.pk %}" class="btn btn-sm btn-danger"><i class="bi bi-trash"></i></a>
+                                </td>
+                                <td style="text-align: center;">{{ recipient.note|default:"-" }}</td>
+                            </tr>
+                        {% empty %}
+                            <tr>
+                                <td colspan="6">Нет записей.</td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+                {# Пагинация (если используется) #}
+    {% if is_paginated %}
+        <nav aria-label="Page navigation">
+            <ul class="pagination">
+                {% if page_obj.has_previous %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ page_obj.previous_page_number }}" aria-label="Previous">
+                            <span aria-hidden="true">&laquo;</span>
+                        </a>
+                    </li>
+                {% endif %}
+                <li class="page-item active"><a class="page-link" href="#">{{ page_obj.number }}</a></li>
+                {% if page_obj.has_next %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ page_obj.next_page_number }}" aria-label="Next">
+                            <span aria-hidden="true">&raquo;</span>
+                        </a>
+                    </li>
+                {% endif %}
+            </ul>
+        </nav>
+    {% endif %}
+            </div>
+        {% else %}
+            <p class="alert alert-info">Нет доступных записей.</p>
+        {% endif %}
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
+ {% endblock %}

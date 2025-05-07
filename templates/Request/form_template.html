@@ -1,0 +1,243 @@
+{% load django_bootstrap5 %}
+
+<div class="mb-3">
+    <label for="{{ form.date.id_for_label }}" class="form-label">{{ form.date.label }}</label>
+    {{ form.date }}
+    <div class="invalid-feedback" id="date-error"></div>
+</div>
+
+<div class="mb-3">
+    <label for="{{ form.number_naumen.id_for_label }}" class="form-label">{{ form.number_naumen.label }}</label>
+    {{ form.number_naumen }}
+    <div class="invalid-feedback" id="number_naumen-error"></div>
+</div>
+
+<div class="mb-3">
+    <label for="{{ form.number_elk.id_for_label }}" class="form-label">{{ form.number_elk.label }}</label>
+    {{ form.number_elk }}
+    <div class="invalid-feedback" id="number_elk-error"></div>
+</div>
+
+<div class="mb-3">
+    <label for="{{ form.ogv.id_for_label }}" class="form-label">{{ form.ogv.label }}</label>
+    {{ form.ogv }}
+     <div class="invalid-feedback" id="ogv-error"></div>
+</div>
+
+<div class="mb-3">
+    <label for="{{ form.amount.id_for_label }}" class="form-label">{{ form.amount.label }}</label>
+    {{ form.amount }}
+    <div class="invalid-feedback" id="amount-error"></div>
+</div>
+
+<div class="mb-3">
+    <label for="{{ form.abonents.id_for_label }}" class="form-label">{{ form.abonents.label }}
+        <button type="button" class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#newabonentModal">
+            <i class="bi bi-plus"></i>
+        </button>
+    </label>
+    {{ form.abonents }}
+    <div class="invalid-feedback" id="abonents-error"></div>
+</div>
+
+<div class="mb-3">
+    <label for="{{ form.platform.id_for_label }}" class="form-label">{{ form.platform.label }}
+        <button type="button" class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#platformModal">
+            <i class="bi bi-plus"></i>
+        </button>
+    </label>
+    {{ form.platform }}
+    <div class="invalid-feedback" id="platform-error"></div>
+</div>
+
+<div class="mb-3">
+    <label for="{{ form.net_number.id_for_label }}" class="form-label">{{ form.net_number.label }}
+        <button type="button" class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#vipnetnetnumberModal">
+            <i class="bi bi-plus"></i>
+        </button>
+    </label>
+    {{ form.net_number }}
+    <div class="invalid-feedback" id="net_number-error"></div>
+</div>
+
+<div class="mb-3">
+    <label for="{{ form.note.id_for_label }}" class="form-label">{{ form.note.label }}</label>
+    {{ form.note }}
+    <div class="invalid-feedback" id="note-error"></div>
+</div>
+
+<!-- Модальное окно для NewAbonent -->
+<div class="modal fade" id="newabonentModal" tabindex="-1" aria-labelledby="newabonentModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="newabonentModalLabel">Создать абонента</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="newabonentForm">
+                    {% csrf_token %}
+                    {% bootstrap_form new_abonent_form %}
+                    <button type="button" class="btn btn-primary" id="saveNewAbonent">Сохранить</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Модальное окно для Platform -->
+<div class="modal fade" id="platformModal" tabindex="-1" aria-labelledby="platformModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="platformModalLabel">Создать платформу</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="platformForm">
+                    {% csrf_token %}
+                    {% bootstrap_form platform_form %}
+                    <button type="button" class="btn btn-primary" id="savePlatform">Сохранить</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Модальное окно для ViPNetNetNumber -->
+<div class="modal fade" id="vipnetnetnumberModal" tabindex="-1" aria-labelledby="vipnetnetnumberModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="vipnetnetnumberModalLabel">Создать номер сети ViPNet</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="vipnetnetnumberForm">
+                    {% csrf_token %}
+                    {% bootstrap_form vipnet_net_number_form %}
+                    <button type="button" class="btn btn-primary" id="saveVipnetnetnumber">Сохранить</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    function validateForm(formId) {
+        let isValid = true;
+        const form = document.getElementById(formId);
+        const inputs = form.querySelectorAll('input, select, textarea');
+
+        inputs.forEach(input => {
+            if (!input.checkValidity()) {
+                isValid = false;
+                input.classList.add('is-invalid');
+                // Дополнительная логика для отображения сообщений об ошибках, если необходимо
+            } else {
+                input.classList.remove('is-invalid');
+            }
+        });
+        return isValid;
+    }
+
+    document.addEventListener('DOMContentLoaded', function() {
+        // Обработчик для NewAbonent
+        document.getElementById('saveNewAbonent').addEventListener('click', function() {
+            if (!validateForm('newabonentForm')) {
+                return;
+            }
+            const form = document.getElementById('newabonentForm');
+            const formData = new FormData(form);
+
+            fetch("{% url 'Request:create_new_abonent' %}", {
+                method: 'POST',
+                body: formData,
+                headers: {'X-CSRFToken': formData.get('csrfmiddlewaretoken')
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Обновляем список абонентов
+                    const select = document.getElementById('id_abonents');
+                    const newOption = new Option(data.abonent_name, data.abonent_id);
+                    select.add(newOption, undefined); // Добавляем в конец списка
+                    select.value = data.abonent_id; // Выбираем новый элемент
+                    $('#newabonentModal').modal('hide'); // Закрываем модальное окно
+                    form.reset();  // Очищаем форму
+                    //Можно добавить сообщение об успехе
+                } else {
+                    // Обрабатываем ошибки
+                    alert('Ошибка при создании абонента: ' + data.errors);
+                }
+            });
+        });
+
+        // Обработчик для Platform
+        document.getElementById('savePlatform').addEventListener('click', function() {
+            if (!validateForm('platformForm')) {
+                return;
+            }
+            const form = document.getElementById('platformForm');
+            const formData = new FormData(form);
+
+            fetch("{% url 'Request:create_platform' %}", {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-CSRFToken': formData.get('csrfmiddlewaretoken')
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Обновляем список платформ
+                    const select = document.getElementById('id_platform');
+                    const newOption = new Option(data.platform_name, data.platform_id);
+                    select.add(newOption, undefined); // Добавляем в конец списка
+                    select.value = data.platform_id; // Выбираем новый элемент
+                    $('#platformModal').modal('hide'); // Закрываем модальное окно
+                    form.reset();  // Очищаем форму
+                    //Можно добавить сообщение об успехе
+                } else {
+                    // Обрабатываем ошибки
+                    alert('Ошибка при создании платформы: ' + data.errors);
+                }
+            });
+        });
+
+        // Обработчик для ViPNetNetNumber
+        document.getElementById('saveVipnetnetnumber').addEventListener('click', function() {
+            if (!validateForm('vipnetnetnumberForm')) {
+                return;
+            }
+            const form = document.getElementById('vipnetnetnumberForm');
+            const formData = new FormData(form);
+
+            fetch("{% url 'Request:create_vipnetnetnumber' %}", {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-CSRFToken': formData.get('csrfmiddlewaretoken')
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Обновляем список номеров сетей ViPNet
+                    const select = document.getElementById('id_net_number');
+                    const newOption = new Option(data.vipnet_net_number, data.vipnet_net_number_id);
+                    select.add(newOption, undefined); // Добавляем в конец списка
+                    select.value = data.vipnet_net_number_id; // Выбираем новый элемент
+                    $('#vipnetnetnumberModal').modal('hide'); // Закрываем модальное окно
+                    form.reset();  // Очищаем форму
+                    //Можно добавить сообщение об успехе
+                } else {
+                    // Обрабатываем ошибки
+                    alert('Ошибка при создании номера сети ViPNet: ' + data.errors);
+                }
+            });
+        });
+    });
+</script>

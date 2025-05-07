@@ -1,0 +1,44 @@
+{% load django_bootstrap5 %}
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Главная страница</title>
+    {% bootstrap_css %}
+</head>
+<body>
+    <div class="container">
+        <h1>Добро пожаловать!</h1>
+        <p>Выберите действие:</p>
+
+        <ul class="list-group">
+<!--            <li class="list-group-item">-->
+<!--                <a href="http://127.0.0.1:8000/admin/Request/newreq/">-->
+<!--                    Запросы на dst (admin)-->
+<!--                </a>-->
+<!--            </li>-->
+
+            <li class="list-group-item">
+                <a href="http://127.0.0.1:8000/admin/Issuance/logbook/">
+                    Добавить запрос (admin)
+                </a>
+            </li>
+
+            <li class="list-group-item">
+                <a href="{% url 'Queue:newrecipient_list' %}">
+                    Очередь на получение
+                </a>
+            </li>
+
+            <li class="list-group-item">
+                <a href="{% url 'Issuance:logbook_list' %}">
+                    Выгрузка журнала выдачи в Excel
+                </a>
+            </li>
+
+        </ul>
+    </div>
+    {% bootstrap_javascript %}
+</body>
+</html>
+

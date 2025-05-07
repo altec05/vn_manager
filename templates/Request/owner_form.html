@@ -1,0 +1,6 @@
+{% load django_bootstrap5 %}
+<form id="ownerForm">
+    {% csrf_token %}
+    {% bootstrap_form form %}
+    <button type="button" class="btn btn-primary" id="saveOwner">Сохранить</button>
+</form>

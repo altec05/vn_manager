@@ -1,0 +1,121 @@
+{% extends "base.html" %}
+{% block title %}Запись на получение{% endblock %}
+{% block content %}
+{% load static %}
+{% load django_bootstrap5 %}
+{% bootstrap_css %}
+
+{% load queue_extras %}
+<style>
+    .status-released {
+        background-color: #f8d7da !important;
+    }
+
+    .status-pending {
+        background-color: #fff3cd !important;
+    }
+
+    .status-completed {
+        background-color: #d1e7dd !important;
+    }
+
+    .table {
+        table-layout: fixed;
+        min-width: 100%; /* Важно для table-layout: fixed */
+    }
+    .col-num { width: 50px; }
+    .col-status { width: 100px;}
+    .col-date { width: 100px; }
+    .col-request { width: 150px; }
+    .col-amount { width: 80px; }
+    .col-ogv { width: 300px; }
+    .col-actions { width: 200px; }
+    .col-note { width: 200px; }
+
+</style>
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-md-3 mt-3">
+<!--            <h5>Фильтр</h5>-->
+            <form method="get">
+                {% bootstrap_form filter_form %}
+                <button type="submit" class="btn btn-sm btn-warning">Отфильтровать</button>
+                <a href="{% url 'Queue:newrecipient_list' %}" class="btn btn-sm btn-secondary">Сбросить</a>
+            </form>
+        </div>
+    </div>
+    <h1 class="mt-3">Записи на получение</h1>
+    <a href="{% url 'Queue:newrecipient_create' %}" class="btn btn-primary mb-3"><i class="bi bi-plus-circle"></i> Добавить запись</a>
+
+    {% if recipients %}
+    <div class="table-responsive mt-3">
+        <table class="table table-hover table-striped">
+            <thead>
+                <tr>
+                    <th style="text-align: center;" class="col-num">№</th>
+                    <th style="text-align: center;" class="col-status">Статус</th>
+                    <th style="text-align: center;" class="col-date">Дата и время</th>
+                    <th style="text-align: center;" class="col-request">Запрос</th>
+                    <th style="text-align: center;" class="col-amount">Количество</th>
+                    <th style="text-align: center;" class="col-ogv">ОГВ</th>
+                    <th style="text-align: center;" class="col-actions">Действия</th>
+                    <th style="text-align: center;" class="col-note">Примечание</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for recipient in recipients %}
+                <tr>
+                    <td style="text-align: center;" class="col-num">{{ forloop.counter }}</td>
+                    <td style="text-align: center;" class="col-status {{ status_classes|get_item:recipient.status }}">{{ recipient.get_status_display }}</td>
+             <td style="text-align: center;" class="col-date">{{ recipient.date|default_if_none:"__.__.____" }} {{ recipient.receiving_time|default_if_none:"__:__" }}</td>
+                    <td style="text-align: center;" class="col-request">
+                        {% if recipient.number_elk %}
+                            {{ recipient.number_naumen|default_if_none:"-" }} / ЕЛК {{ recipient.number_elk }}
+                        {% else %}
+                            {{ recipient.number_naumen|default_if_none:"-" }}
+                        {% endif %}
+                    </td>
+                    <td style="text-align: center;" class="col-amount">{{ recipient.amount }}</td>
+                    <td style="text-align: center;" class="col-ogv">{{ recipient.ogv }}</td>
+                    <td style="text-align: center;" class="col-actions">
+                        <a href="{% url 'Queue:newrecipient_detail' recipient.pk %}" class="btn btn-sm btn-info"><i class="bi bi-eye"></i></a>
+                        <a href="{% url 'Queue:newrecipient_update' recipient.pk %}" class="btn btn-sm btn-warning"><i class="bi bi-pencil"></i></a>
+                        <a href="{% url 'Queue:newrecipient_delete' recipient.pk %}" class="btn btn-sm btn-danger"><i class="bi bi-trash"></i></a>
+                    </td>
+                    <td style="text-align: center;" class="col-note">{{ recipient.note|default:"-" }}</td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="8">Нет записей.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {# Пагинация (если используется) #}
+        {% if is_paginated %}
+        <nav aria-label="Page navigation">
+            <ul class="pagination">
+                {% if page_obj.has_previous %}
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ page_obj.previous_page_number }}" aria-label="Previous">
+                        <span aria-hidden="true">&laquo;</span>
+                    </a>
+                </li>
+                {% endif %}
+                <li class="page-item active"><a class="page-link" href="#">{{ page_obj.number }}</a></li>
+                {% if page_obj.has_next %}
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ page_obj.next_page_number }}" aria-label="Next">
+                        <span aria-hidden="true">&raquo;</span>
+                    </a>
+                </li>
+                {% endif %}
+            </ul>
+        </nav>
+        {% endif %}
+    </div>
+    {% else %}
+    <p class="alert alert-info">Нет доступных записей.</p>
+    {% endif %}
+</div>
+{% endblock %}

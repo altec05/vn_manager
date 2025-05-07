@@ -1,0 +1,119 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load django_bootstrap5 %}
+{% block content %}
+    <div class="container py-4">
+        <h1>Создать запрос</h1>
+
+        <form method="post" id="newreq-form" class="card p-3">
+            {% csrf_token %}
+
+            {% include 'request/form_template.html' %}
+
+            <button type="submit" class="btn btn-primary"><i class="bi bi-save"></i> Сохранить</button>
+            <a href="{% url 'Request:newreq_list' %}" class="btn btn-secondary"><i class="bi bi-x"></i> Отмена</a>
+        </form>
+    </div>
+
+    <!-- Модальное окно для ViPNetNetNumber -->
+    <div class="modal fade" id="vipnetnetnumberModal" tabindex="-1" aria-labelledby="vipnetnetnumberModalLabel"
+         aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="vipnetnetnumberModalLabel">Создать номер сети ViPNet</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="vipnetnetnumberForm" method="post">
+                        {% csrf_token %}
+                        {% bootstrap_form vipnet_net_number_form %}
+                        <button type="submit" class="btn btn-primary">Сохранить</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Модальное окно для Platform -->
+    <div class="modal fade" id="platformModal" tabindex="-1" aria-labelledby="platformModalLabel"
+         aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="platformModalLabel">Создать платформу</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="platformForm" method="post">
+                        {% csrf_token %}
+                        {% bootstrap_form platform_form %}
+                        <button type="submit" class="btn btn-primary">Сохранить</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Модальное окно для NewAbonent -->
+<div class="modal fade" id="newabonentModal" tabindex="-1" aria-labelledby="newabonentModalLabel"
+         aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="newabonentModalLabel">Создать абонента</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="newAbonentForm" method="post">
+                        {% csrf_token %}
+                        {% bootstrap_form new_abonent_form %}
+                        <button type="submit" class="btn btn-primary">Сохранить</button>
+                         <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#ownerModal">Создать владельца</button>
+                         <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#clientModal">Создать клиента</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Модальное окно для Owner -->
+    <div class="modal fade" id="ownerModal" tabindex="-1" aria-labelledby="ownerModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="ownerModalLabel">Создать владельца</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="ownerForm" method="post">
+                        {% csrf_token %}
+                        {% bootstrap_form owner_form %}
+                        <button type="submit" class="btn btn-primary">Сохранить</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Модальное окно для ClientName -->
+    <div class="modal fade" id="clientModal" tabindex="-1" aria-labelledby="clientModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="clientModalLabel">Создать клиента</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="clientForm" method="post">
+                        {% csrf_token %}
+                        {% bootstrap_form client_form %}
+                        <button type="submit" class="btn btn-primary">Сохранить</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="{% static '/js/newreq_create.js' %}"></script>
+{% endblock %}

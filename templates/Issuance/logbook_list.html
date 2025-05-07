@@ -1,0 +1,203 @@
+{% load django_bootstrap5 %}
+
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Список выдач</title>
+
+    {% bootstrap_css %}
+
+    <style>
+        .selected-row {
+            background-color: #dff0d8;
+        }
+
+       .table-striped th:nth-child(1),
+       .table-striped td:nth-child(1) {
+           min-width: 90px;
+       }
+
+       .table-striped th:nth-child(2),
+       .table-striped td:nth-child(2) {
+           min-width: 50px;
+       }
+       .table-striped th:nth-child(3),
+       .table-striped td:nth-child(3) {
+           min-width: 100px;
+       }
+       .table-striped th:nth-child(4),
+       .table-striped td:nth-child(4) {
+           min-width: 110px;
+       }
+       .table-striped th:nth-child(5),
+       .table-striped td:nth-child(5) {
+           min-width: 120px;
+       }
+       .table-striped th:nth-child(6),
+       .table-striped td:nth-child(6) {
+           min-width: 150px;
+       }
+       .table-striped th:nth-child(7),
+       .table-striped td:nth-child(7) {
+           min-width: 100px;
+       }
+       .table-striped th:nth-child(8),
+       .table-striped td:nth-child(8) {
+           min-width: 100px;
+       }
+       .table-striped th:nth-child(9),
+       .table-striped td:nth-child(9) {
+           min-width: 500px;
+       }
+       .table-striped th:nth-child(10),
+       .table-striped td:nth-child(10) {
+           min-width: 100px;
+       }
+       .table-striped th:nth-child(11),
+       .table-striped td:nth-child(11) {
+           min-width: 400px;
+       }
+       .table-striped th:nth-child(12),
+       .table-striped td:nth-child(12) {
+           min-width: 400px;
+       }
+       .table-striped th:nth-child(13),
+       .table-striped td:nth-child(13) {
+           min-width: 80px;
+       }
+
+       .table-striped th:nth-child(14),
+       .table-striped td:nth-child(14) {
+           min-width: 170px;
+       }
+        .table-striped th:nth-child(15),
+       .table-striped td:nth-child(15) {
+           min-width: 150px;
+       }
+
+       .table-striped th,
+       .table-striped td {
+           text-align: center;
+           word-break: break-word;
+       }
+
+        .abonent-table {
+            width: 100%; /* Занимает всю ширину ячейки */
+        }
+    </style>
+
+</head>
+
+<body>
+
+<header class="bg-light py-3">
+   <div class="ms-5">
+       <a href="{% url 'home' %}" class="navbar-brand">
+           Главная страница
+       </a>
+   </div>
+</header>
+
+<div class="ms-5">
+    <h2>Журнал выдачи</h2>
+
+    <form method="post">
+        {% csrf_token %}
+        {{ form.as_p }}  {# Выводим форму (скрытое поле и флажок) #}
+
+        <table class="table table-striped ">
+            <thead>
+                <tr>
+                    <th>Выбрать</th>
+                    <th>№</th>
+                    <th>№ в журнале</th>
+                    <th>Дата запроса</th>
+                    <th>Дата получения</th>
+                    <th>Основание</th>
+                    <th>Номер Naumen</th>
+                    <th>Номер ЕЛК</th>
+                    <th>ОГВ</th>
+                    <th>Всего dst</th>
+                    <th colspan="2">Абоненты</th>
+                    <th>Платформа</th>
+                    <th>Номер сети</th>
+                    <th>Примечание</th>
+                </tr>
+                <tr>
+                    <th></th>
+                    <th></th>
+                    <th></th>
+                    <th></th>
+                    <th></th>
+                    <th></th>
+                    <th></th>
+                    <th></th>
+                    <th></th>
+                    <th></th>
+                    <th>ФИО владельца</th>
+                    <th>Имя клиента</th>
+                    <th></th>
+                    <th></th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for logbook in logbooks %}
+                    <tr id="row-{{ logbook.id }}">
+                        <td><input type="checkbox" class="logbook-checkbox" value="{{ logbook.id }}"></td>
+                        <td>{{ forloop.counter }}</td>  {# Отображаем номер строки #}
+                        <td>{{ logbook.log_number|default_if_none:"-" }}</td>
+                        <td>{{ logbook.date_of_request|default_if_none:"__.__.____" }}</td>
+                        <td>{{ logbook.date_of_receipt|default_if_none:"__.__.____" }}</td>
+                        <td>{{ logbook.authority|default_if_none:"не получен" }}</td>
+                        <td>{{ logbook.number_naumen|default_if_none:"-" }}</td>
+                        <td>{{ logbook.number_elk|default_if_none:"-" }}</td>
+                        <td>{{ logbook.ogv }}</td>
+                        <td>{{ logbook.amount }}</td>
+                            <td>
+                        {% for abonent in logbook.abonents.all %}
+                            {{ abonent.owner.full_name }}<br>
+                        {% endfor %}
+                    </td>
+                    <td>
+                        {% for abonent in logbook.abonents.all %}
+                            {{ abonent.client.client_name }}<br>
+                        {% endfor %}
+                    </td>
+                        <td>{{ logbook.platform }}</td>
+                        <td>{{ logbook.net_number }}</td>
+                        <td>{{ logbook.note }}</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
+        <button type="submit" class="btn btn-primary">Экспортировать выбранные строки</button>
+    </form>
+</div>
+
+{% bootstrap_javascript %}
+<script>
+    const checkboxes = document.querySelectorAll('.logbook-checkbox');
+    const selectedIdsInput = document.querySelector('#id_selected_ids');  // ID генерируется Django
+
+    checkboxes.forEach(checkbox => {
+        checkbox.addEventListener('change', function() {
+            const row = document.querySelector('#row-' + this.value);
+            if (this.checked) {
+                row.classList.add('selected-row');
+            } else {
+                row.classList.remove('selected-row');
+            }
+
+            // Обновляем значение скрытого поля
+            const selectedIds = Array.from(checkboxes)
+                .filter(cb => cb.checked)
+                .map(cb => cb.value);
+            selectedIdsInput.value = selectedIds.join(',');
+        });
+    });
+</script>
+</body>
+</html>
