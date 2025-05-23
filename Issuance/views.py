@@ -27,7 +27,6 @@ def logbook_list(request):
                 worksheet = workbook.add_worksheet('Logbook')
 
                 # Форматы
-                # Форматы
                 bold_format = workbook.add_format({'bold': True, 'border': 1, 'valign': 'center', 'align': 'center'}) #bold_format
                 border_format = workbook.add_format({'border': 1, 'valign': 'vcenter', 'align': 'center'})#border_format
                 center_align_format = workbook.add_format({'align': 'center', 'valign': 'vcenter'})
@@ -68,14 +67,14 @@ def logbook_list(request):
                         # Если это первая строка для данной записи, записываем все поля
                         if i == 0:
                             row = [
-                                logbook.log_number,
+                                int(logbook.log_number),
                                 logbook.date_of_request.strftime('%d.%m.%y') if logbook.date_of_request else '',
                                 logbook.date_of_receipt.strftime('%d.%m.%y') if logbook.date_of_receipt else '',
                                 logbook.authority.name,
                                 logbook.number_naumen,
-                                logbook.number_elk,
+                                int(logbook.number_elk),
                                 logbook.ogv,
-                                logbook.amount,
+                                int(logbook.amount),
                                 fio,
                                 client,
                                 logbook.platform.platform_name,

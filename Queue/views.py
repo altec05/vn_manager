@@ -144,7 +144,6 @@ class NewRecipientUpdateView(UpdateView):
         kwargs['instance'] = self.get_object()  # Передаем экземпляр объекта в форму
         return kwargs
 
-
 class NewRecipientDeleteView(DeleteView):
     model = NewRecipient
     template_name = 'Queue/newrecipient_delete.html'

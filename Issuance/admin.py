@@ -5,12 +5,13 @@ from Request.models import NewReq
 class LogbookAdmin(admin.ModelAdmin):
     save_on_top = True
 
-    list_display = ('log_number', 'date_of_request', 'date_of_receipt', 'authority', 'number_naumen', 'number_elk', 'ogv', 'amount',
+    list_display = ('log_number', 'status', 'date_of_request', 'date_of_receipt', 'authority', 'number_naumen', 'number_elk', 'ogv', 'amount',
     'net_number')
     list_display_links = ('log_number',)
     # readonly_fields = ('date_of_request', 'number_naumen', 'number_elk', 'ogv', 'platform', 'net_number')
     search_fields = ('log_number', 'number_naumen', 'number_elk', 'abonents__owner__full_name', 'abonents__client__client_name')
-    # list_filter = ('city_of_install',)
+    list_filter = ('status', 'authority', 'amount', 'net_number')
+    date_hierarchy = 'date_of_request'
 
 
     # list_display = ('log_number', 'date_of_request', 'date_of_receipt', 'authority', 'number_naumen', 'number_elk', 'ogv', 'amount', 'net_number')

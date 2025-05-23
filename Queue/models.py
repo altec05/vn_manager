@@ -32,7 +32,7 @@ class NewRecipient(models.Model):
         verbose_name_plural = 'Записи на получение'
 
     def __str__(self):
-        return f"{self.date} - {self.status}"
+        return f"{self.status} - {self.date} - {self.amount} - {self.ogv}"
 
     def clean(self):
         if int(str(self.amount)) < 1:

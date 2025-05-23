@@ -29,7 +29,8 @@
     .col-request { width: 150px; }
     .col-amount { width: 80px; }
     .col-ogv { width: 300px; }
-    .col-actions { width: 200px; }
+    .col-clients { width: 300px; }
+    .col-actions { width: 100px; }
     .col-note { width: 200px; }
 
 </style>
@@ -58,6 +59,7 @@
                     <th style="text-align: center;" class="col-request">Запрос</th>
                     <th style="text-align: center;" class="col-amount">Количество</th>
                     <th style="text-align: center;" class="col-ogv">ОГВ</th>
+                    <th style="text-align: center;" class="col-clients">Клиенты</th>
                     <th style="text-align: center;" class="col-actions">Действия</th>
                     <th style="text-align: center;" class="col-note">Примечание</th>
                 </tr>
@@ -68,7 +70,7 @@
                     <td style="text-align: center;" class="col-num">{{ forloop.counter }}</td>
                     <td style="text-align: center;" class="col-status {{ status_classes|get_item:recipient.status }}">{{ recipient.get_status_display }}</td>
              <td style="text-align: center;" class="col-date">{{ recipient.date|default_if_none:"__.__.____" }} {{ recipient.receiving_time|default_if_none:"__:__" }}</td>
-                    <td style="text-align: center;" class="col-request">
+                    <td style="text-align: left;" class="col-request">
                         {% if recipient.number_elk %}
                             {{ recipient.number_naumen|default_if_none:"-" }} / ЕЛК {{ recipient.number_elk }}
                         {% else %}
@@ -76,7 +78,13 @@
                         {% endif %}
                     </td>
                     <td style="text-align: center;" class="col-amount">{{ recipient.amount }}</td>
-                    <td style="text-align: center;" class="col-ogv">{{ recipient.ogv }}</td>
+                    <td style="text-align: left;" class="col-ogv">{{ recipient.ogv }}</td>
+                    <td style="text-align: left;" class="col-clients">
+                        {% for abonent in recipient.request.abonents.all %}
+<!--                            {{ forloop.counter }}. {{ abonent.client.client_name }}<br>-->
+                            {{ forloop.counter }}. {{ abonent.owner.full_name }}<br>
+                        {% endfor %}
+                    </td>
                     <td style="text-align: center;" class="col-actions">
                         <a href="{% url 'Queue:newrecipient_detail' recipient.pk %}" class="btn btn-sm btn-info"><i class="bi bi-eye"></i></a>
                         <a href="{% url 'Queue:newrecipient_update' recipient.pk %}" class="btn btn-sm btn-warning"><i class="bi bi-pencil"></i></a>
