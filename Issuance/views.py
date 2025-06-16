@@ -72,7 +72,7 @@ def logbook_list(request):
                                 logbook.date_of_receipt.strftime('%d.%m.%y') if logbook.date_of_receipt else '',
                                 logbook.authority.name,
                                 logbook.number_naumen,
-                                int(logbook.number_elk),
+                                int(logbook.number_elk) if logbook.number_elk else '',
                                 logbook.ogv,
                                 int(logbook.amount),
                                 fio,

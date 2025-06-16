@@ -34,14 +34,14 @@ class Logbook(models.Model):
     log_number = models.PositiveIntegerField(verbose_name='№ в журнале', blank=True, null=True)
     date_of_request = models.DateField(verbose_name='Дата запроса', blank=True, null=True)
     date_of_receipt = models.DateField(verbose_name='Дата получения', blank=True, null=True)
-    authority = models.ForeignKey(Authority, on_delete=models.CASCADE, verbose_name='Основание', blank=True, null=True)
+    authority = models.ForeignKey(Authority, on_delete=models.PROTECT, verbose_name='Основание', blank=True, null=True)
     number_naumen = models.CharField(max_length=255, verbose_name='Номер Naumen', blank=True, null=True)
     number_elk = models.CharField(max_length=255, verbose_name='Номер ЕЛК', blank=True, null=True)
     ogv = models.TextField(max_length=255, verbose_name='ОГВ')
     amount = models.PositiveIntegerField(verbose_name='dst', default=1)
     abonents = models.ManyToManyField(NewAbonent, verbose_name='Абоненты')
-    platform = models.ForeignKey(Platform, on_delete=models.CASCADE, verbose_name='Платформа')
-    net_number = models.ForeignKey(ViPNetNetNumber, on_delete=models.CASCADE, verbose_name='Номер сети')
+    platform = models.ForeignKey(Platform, on_delete=models.PROTECT, verbose_name='Платформа')
+    net_number = models.ForeignKey(ViPNetNetNumber, on_delete=models.PROTECT, verbose_name='Номер сети')
     note = models.TextField(verbose_name='Примечание', blank=True)
 
     def __str__(self):
