@@ -71,10 +71,16 @@
                     <td style="text-align: center;" class="col-status {{ status_classes|get_item:recipient.status }}">{{ recipient.get_status_display }}</td>
              <td style="text-align: center;" class="col-date">{{ recipient.date|default_if_none:"__.__.____" }} {{ recipient.receiving_time|default_if_none:"__:__" }}</td>
                     <td style="text-align: left;" class="col-request">
-                        {% if recipient.number_elk %}
-                            {{ recipient.number_naumen|default_if_none:"-" }} / ЕЛК {{ recipient.number_elk }}
+                        {% if recipient.request %}
+                            <a href="{% url 'admin:Issuance_logbook_change' recipient.request.pk %}" target="_blank">
+                                {% if recipient.number_elk %}
+                                    {{ recipient.number_naumen|default_if_none:"-" }} / ЕЛК {{ recipient.number_elk }}
+                                {% else %}
+                                    {{ recipient.number_naumen|default_if_none:"-" }}
+                                {% endif %}
+                            </a>
                         {% else %}
-                            {{ recipient.number_naumen|default_if_none:"-" }}
+                            -
                         {% endif %}
                     </td>
                     <td style="text-align: center;" class="col-amount">{{ recipient.amount }}</td>
