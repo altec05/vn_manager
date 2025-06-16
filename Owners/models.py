@@ -59,8 +59,8 @@ class Owner(models.Model):
             raise ValidationError({'full_name': "Укажите полное ФИО!"})
 
 class NewAbonent(models.Model):
-    owner = models.ForeignKey(Owner, on_delete=models.CASCADE, verbose_name='ФИО владельца')
-    client = models.ForeignKey(ClientName, on_delete=models.CASCADE, verbose_name='Клиент')
+    owner = models.ForeignKey(Owner, on_delete=models.PROTECT, verbose_name='ФИО владельца')
+    client = models.ForeignKey(ClientName, on_delete=models.PROTECT, verbose_name='Клиент')
 
     def __str__(self):
         return self.owner.full_name + ' - (' + self.client.client_name + ')'
