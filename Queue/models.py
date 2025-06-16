@@ -1,7 +1,9 @@
 from django.db import models
 from  Request.models import NewReq
-from Issuance.models import Logbook
+from Issuance.models import Logbook, Authority
 from django.core.exceptions import ValidationError
+from django.urls import reverse
+from django.utils.html import format_html
 
 class NewRecipient(models.Model):
     STATUS_CHOICES = [
@@ -39,6 +41,49 @@ class NewRecipient(models.Model):
             raise ValidationError({'amount': "Количество dst должно быть больше 1!"})
 
     def save(self, *args, **kwargs):
+        update_logbook = False
+
+        if self.pk is not None:
+            old_instance = NewRecipient.objects.get(pk=self.pk)
+            if old_instance.status != 'completed' and self.status == 'completed':
+                update_logbook = True
+        else:
+            if self.status == 'completed':
+                update_logbook = True
+
         if self.date and self.status == 'released':
             self.status = 'pending'
         super().save(*args, **kwargs)
+
+        if update_logbook:
+            self.update_logbook()
+
+    def update_logbook(self):
+        logbook = self.request
+        logbook.status = 'received'
+        logbook.date_of_receipt = self.date
+
+        # Find the Authority object named "Лично"
+        try:
+            authority_licno = Authority.objects.get(name="Лично")
+            logbook.authority = authority_licno
+        except Authority.DoesNotExist:
+            # Handle the case where the "Лично" Authority object doesn't exist.
+            # You might want to log an error or create the object.
+            print("Warning: Authority 'Лично' does not exist!")
+            # Optionally create it:
+            # authority_licno = Authority.objects.create(name="Лично")
+            # logbook.authority = authority_licno
+
+        # Find the maximum log number
+        max_log_number = Logbook.objects.exclude(log_number__isnull=True).aggregate(models.Max('log_number'))['log_number__max']
+        logbook.log_number = (max_log_number or 0) + 1  # Handle the case where there are no existing log numbers
+
+        logbook.save()
+
+    def logbook_link(self):
+        if self.request:
+            url = reverse("admin:Issuance_logbook_change", args=[self.request.id])
+            return format_html('<a href="{}">{}</a>', url, self.request)
+        return None
+    logbook_link.short_description = 'Logbook'

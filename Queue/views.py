@@ -2,6 +2,8 @@ from django.shortcuts import render, get_object_or_404, redirect
 from django.urls import reverse_lazy
 from django.db.models import Prefetch
 from django.views.generic import ListView, DetailView, CreateView, UpdateView, DeleteView
+from django.urls import reverse
+from django.http import HttpResponseRedirect
 
 from Owners.models import NewAbonent
 from .models import NewRecipient
@@ -143,6 +145,14 @@ class NewRecipientUpdateView(UpdateView):
         kwargs = super().get_form_kwargs()
         kwargs['instance'] = self.get_object()  # Передаем экземпляр объекта в форму
         return kwargs
+
+    def get_success_url(self):
+        """Redirect to the Logbook's change page in Django Admin."""
+        return reverse("admin:Issuance_logbook_change", args=[self.object.request.id])
+
+    def form_valid(self, form):
+        self.object = form.save()  # Save the NewRecipient object first
+        return super().form_valid(form) # Call the parent class's form_valid method to handle the redirect.
 
 class NewRecipientDeleteView(DeleteView):
     model = NewRecipient
