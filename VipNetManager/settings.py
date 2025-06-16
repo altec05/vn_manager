@@ -52,7 +52,6 @@ INSTALLED_APPS = [
     "debug_toolbar",
     'django_bootstrap5',
     "bootstrap_datepicker_plus",
-
 ]
 
 MIDDLEWARE = [
