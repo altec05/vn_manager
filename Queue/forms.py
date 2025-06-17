@@ -34,8 +34,14 @@ class NewRecipientForm(forms.ModelForm):
             # 'date': DatePickerInput(attrs={'type': 'date'}),  # HTML5 Date Input
             'receiving_time': forms.TimeInput(attrs={'type': 'time'}),  # HTML5 Time Input
             # 'ogv': forms.TextInput(),
-            'amount': forms.NumberInput(),
+            'amount': forms.NumberInput(attrs={'readonly': 'readonly'}),
             'note': forms.Textarea(attrs={'rows': 2}),
+        }
+        help_texts = {
+            'number_naumen': 'Поле будет заполнено из запроса после сохранения!',
+            'number_elk': 'Поле будет будет заполнено из запроса после сохранения!',
+            'ogv': 'Поле будет будет заполнено из запроса после сохранения!',
+            'amount': 'Поле будет будет заполнено из запроса после сохранения!',
         }
 
 class RecipientFilterForm(forms.Form):

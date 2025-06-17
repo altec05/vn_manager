@@ -106,6 +106,8 @@
         {% csrf_token %}
         {{ form.as_p }}  {# Выводим форму (скрытое поле и флажок) #}
 
+        <button type="submit" class="btn btn-primary">Экспортировать выбранные строки</button>
+
         <table class="table table-striped ">
             <thead>
                 <tr>
@@ -173,7 +175,7 @@
             </tbody>
         </table>
 
-        <button type="submit" class="btn btn-primary">Экспортировать выбранные строки</button>
+
     </form>
 </div>
 

@@ -92,6 +92,8 @@ class NewRecipientCreateView(CreateView):
         form.instance.number_naumen = logbook_entry.number_naumen
         form.instance.number_elk = logbook_entry.number_elk
         form.instance.ogv = logbook_entry.ogv
+        form.instance.amount = logbook_entry.amount
+
         return super().form_valid(form)
 
 class NewRecipientUpdateView(UpdateView):
