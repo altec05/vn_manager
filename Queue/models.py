@@ -4,6 +4,7 @@ from Issuance.models import Logbook, Authority
 from django.core.exceptions import ValidationError
 from django.urls import reverse
 from django.utils.html import format_html
+from django.utils import timezone
 
 class NewRecipient(models.Model):
     STATUS_CHOICES = [
@@ -43,8 +44,11 @@ class NewRecipient(models.Model):
     def save(self, *args, **kwargs):
         update_logbook = False
 
+        old_status = None  # Added variable to check previous status
+
         if self.pk is not None:
             old_instance = NewRecipient.objects.get(pk=self.pk)
+            old_status = old_instance.status
             if old_instance.status != 'completed' and self.status == 'completed':
                 update_logbook = True
         else:
@@ -53,6 +57,7 @@ class NewRecipient(models.Model):
 
         if self.date and self.status == 'released':
             self.status = 'pending'
+
         super().save(*args, **kwargs)
 
         if update_logbook:
@@ -61,7 +66,7 @@ class NewRecipient(models.Model):
     def update_logbook(self):
         logbook = self.request
         logbook.status = 'received'
-        logbook.date_of_receipt = self.date
+        logbook.date_of_receipt = self.date if self.date else timezone.now().date()  # Use current date if date is empty
 
         # Find the Authority object named "Лично"
         try:
@@ -75,8 +80,9 @@ class NewRecipient(models.Model):
             # authority_licno = Authority.objects.create(name="Лично")
             # logbook.authority = authority_licno
 
-        # Find the maximum log number
-        max_log_number = Logbook.objects.exclude(log_number__isnull=True).aggregate(models.Max('log_number'))['log_number__max']
+        # Find the maximum log number, excluding the current logbook's number
+        max_log_number = Logbook.objects.exclude(pk=logbook.pk).exclude(log_number__isnull=True).aggregate(models.Max('log_number'))['log_number__max']
+
         logbook.log_number = (max_log_number or 0) + 1  # Handle the case where there are no existing log numbers
 
         logbook.save()

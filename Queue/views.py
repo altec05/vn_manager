@@ -146,13 +146,27 @@ class NewRecipientUpdateView(UpdateView):
         kwargs['instance'] = self.get_object()  # Передаем экземпляр объекта в форму
         return kwargs
 
-    def get_success_url(self):
-        """Redirect to the Logbook's change page in Django Admin."""
-        return reverse("admin:Issuance_logbook_change", args=[self.object.request.id])
+    # def get_success_url(self):
+    #     """Redirect to the Logbook's change page in Django Admin."""
+    #     instance = self.get_object()
+    #     # Check if status has changed to 'completed' for redirection
+    #     if self.object.status == 'completed':
+    #         return reverse("admin:Issuance_logbook_change", args=[instance.request.id])
+    #     else:
+    #         return reverse_lazy('Queue:newrecipient_list')
 
     def form_valid(self, form):
-        self.object = form.save()  # Save the NewRecipient object first
-        return super().form_valid(form) # Call the parent class's form_valid method to handle the redirect.
+        instance = self.get_object()
+        old_status = instance.status
+        new_recipient = form.save()
+
+        # Redirect to Logbook change page only if status changed to "completed" AND it was not already "completed"
+        if old_status != 'completed' and new_recipient.status == 'completed':
+            self.success_url = reverse("admin:Issuance_logbook_change", args=[new_recipient.request.id])
+        else:
+            self.success_url = reverse_lazy('Queue:newrecipient_list')
+
+        return super().form_valid(form)
 
 class NewRecipientDeleteView(DeleteView):
     model = NewRecipient
