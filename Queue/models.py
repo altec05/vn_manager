@@ -15,7 +15,7 @@ class NewRecipient(models.Model):
     status = models.CharField(
         max_length=20,
         choices=STATUS_CHOICES,
-        default='pending',
+        default='released',
         verbose_name='Статус'
     )
     number_naumen = models.CharField(max_length=255, verbose_name='Номер Naumen', blank=True, null=True)

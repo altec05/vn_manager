@@ -21,8 +21,11 @@
         <form method="post" class="card p-3">
             {% csrf_token %}
             {% include 'Queue/form_template.html' %}
-            <button type="submit" class="btn btn-primary"><i class="bi bi-save"></i> Сохранить</button>
-            <a href="{% url 'Queue:newrecipient_list' %}" class="btn btn-secondary"><i class="bi bi-x"></i> Отмена</a>
+            <button type="submit" class="btn btn-primary">
+                <i class="bi bi-save"></i> Сохранить
+            </button>
+            <a href="{% url 'Queue:newrecipient_list' %}" class="btn btn-secondary">
+                <i class="bi bi-x"></i> Отмена</a>
         </form>
     </div>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
