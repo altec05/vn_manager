@@ -18,16 +18,19 @@ class NewRecipientListView(ListView):
 
     def get_queryset(self):
         queryset = super().get_queryset()
-        #  Не передаем self.request.GET при первом открытии
-        if self.request.GET:
+        #  При первом открытии страницы применяем фильтр "Не выдано"
+        if not self.request.GET:
+            queryset = queryset.exclude(status='completed')
+            self.form = RecipientFilterForm(initial={'status': 'not_completed'})  # Фильтр при загрузке страницы
+        else:
             self.form = RecipientFilterForm(self.request.GET)
             if self.form.is_valid():
                 status = self.form.cleaned_data.get('status')
-                if status:
+
+                if status == 'not_completed':
+                    queryset = queryset.exclude(status='completed')
+                elif status:
                     queryset = queryset.filter(status=status)
-        else:
-             self.form = RecipientFilterForm() # Создаем форму без данных
-             queryset = queryset.filter(status='pending')
 
 
         return queryset
@@ -36,6 +39,18 @@ class NewRecipientListView(ListView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context['filter_form'] = self.form  # Передайте форму в шаблон
+
+        # Получаем номер текущей страницы
+        page_number = self.request.GET.get('page')
+        if not page_number:
+            page_number = 1
+        else:
+            page_number = int(page_number)
+
+        # Вычисляем начальный номер строки
+        start_row_number = (page_number - 1) * self.paginate_by + 1
+        context['start_row_number'] = start_row_number
+
         # Добавляем словарь с классами статусов в контекст
         context['status_classes'] = {
             'released': 'status-released',

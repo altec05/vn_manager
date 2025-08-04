@@ -28,9 +28,10 @@ class NewRecipient(models.Model):
     request = models.ForeignKey(Logbook, on_delete=models.CASCADE, verbose_name='Запрос')
     # received = models.BooleanField(default=False, verbose_name='Получено')
     note = models.TextField(verbose_name='Примечание', blank=True)
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name='Дата создания записи')
 
     class Meta:
-        ordering = ['-date']
+        ordering = ['-created_at', '-date']
         verbose_name = 'Запись на получение'
         verbose_name_plural = 'Записи на получение'
 

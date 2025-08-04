@@ -4,6 +4,7 @@
 {% load static %}
 {% load django_bootstrap5 %}
 {% bootstrap_css %}
+{% load queue_extras %}
 
 {% load queue_extras %}
 <style>
@@ -67,9 +68,9 @@
             <tbody>
                 {% for recipient in recipients %}
                 <tr>
-                    <td style="text-align: center;" class="col-num">{{ forloop.counter }}</td>
-                    <td style="text-align: center;" class="col-status {{ status_classes|get_item:recipient.status }}">{{ recipient.get_status_display }}</td>
-             <td style="text-align: center;" class="col-date">{{ recipient.date|default_if_none:"__.__.____" }} {{ recipient.receiving_time|default_if_none:"__:__" }}</td>
+                    <td style="text-align: center;" class="col-num">{{ start_row_number|add:forloop.counter0 }}</td>
+                    <td style="text-align: center;" class="col-status {{ status_classes|get_item:recipient.status }}">{{ recipient|display_recipient_status|safe }}</td>
+             <td style="text-align: center;" class="col-date">{{ recipient.date|default_if_none:"__.__.____" }}<br>{{ recipient.receiving_time|default_if_none:"" }}</td>
                     <td style="text-align: left;" class="col-request">
                         {% if recipient.request %}
                             <a href="{% url 'admin:Issuance_logbook_change' recipient.request.pk %}" target="_blank">
@@ -116,7 +117,13 @@
                     </a>
                 </li>
                 {% endif %}
-                <li class="page-item active"><a class="page-link" href="#">{{ page_obj.number }}</a></li>
+                {% for num in page_obj.paginator.page_range %}
+                    {% if page_obj.number == num %}
+                        <li class="page-item active"><a class="page-link" href="#">{{ num }}</a></li>
+                    {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                        <li class="page-item"><a class="page-link" href="?page={{ num }}">{{ num }}</a></li>
+                    {% endif %}
+                {% endfor %}
                 {% if page_obj.has_next %}
                 <li class="page-item">
                     <a class="page-link" href="?page={{ page_obj.next_page_number }}" aria-label="Next">

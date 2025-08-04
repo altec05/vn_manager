@@ -70,6 +70,9 @@ class Logbook(models.Model):
         if self.date_of_receipt and self.status == 'released':
             self.status = 'received'
 
+        # Заполняем amount количеством абонентов
+        self.amount = self.abonents.count()
+
         # Сначала сохраняем объект, чтобы получить id
         super().save(*args, **kwargs)
 

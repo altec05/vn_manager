@@ -18,8 +18,12 @@ class NewRecipientForm(forms.ModelForm):
     #     label='Предполагаемая дата получения',
     #     required=False
     # )
+    objs = Logbook.objects.filter(log_number__isnull=True)
+    if len(objs) < 1:
+        objs = Logbook.objects.all()
     request = forms.ModelChoiceField(
-        queryset=Logbook.objects.all(),
+        queryset=objs,
+        # queryset=Logbook.objects.all(),
         label='Запрос',
         empty_label="Выберите запрос"  # Добавляем пустой вариант
     )
@@ -49,11 +53,12 @@ class RecipientFilterForm(forms.Form):
         ('', 'Все статусы'),  # Пустое значение для "всех статусов"
         ('released', 'Выпущено'),
         ('pending', 'Ожидает получателя'),
+        ('not_completed', 'Не выдано'),
         ('completed', 'Выдано'),
     ]
     status = forms.ChoiceField(
         choices=STATUS_CHOICES,
         required=False,  # Необязательное поле
         label='Фильтр',
-        initial='pending'
+        initial='not_completed'
     )

@@ -2,7 +2,82 @@ from django.contrib import admin
 from .models import Authority, Logbook
 from Request.models import NewReq
 from django.db.models import Q
+from django.utils.translation import gettext_lazy as _
 import unicodedata
+
+class StatusFilter(admin.SimpleListFilter):
+    title = _('Статус')  # Отображаемое имя фильтра
+    parameter_name = 'status'  # Имя параметра в URL
+
+    def lookups(self, request, model_admin):
+        return (
+            ('not_released', _('Заявка')),  # Отображаемое имя для "Пусто"
+            ('released', _('Подготовлен')),  # Отображаемое имя для "Не пусто"
+            ('not_received', _('Не выдан')),  # Отображаемое имя для "Пусто"
+            ('received', _('Выдан')),  # Отображаемое имя для "Не пусто"
+        )
+
+    def queryset(self, request, queryset):
+        if self.value() == 'not_released':
+            return queryset.filter(status__iexact='not_released')  # Фильтруем по статусу Заявка
+        elif self.value() == 'released':
+            return queryset.filter(status__iexact='released')  # Фильтруем по статусу Подготовлен
+        elif self.value() == 'received':
+            return queryset.filter(status__iexact='received')  # Фильтруем по статусу Выдан
+        elif self.value() == 'not_received':
+            return queryset.exclude(status__iexact='received')  # Фильтруем по статусу, кроме Выдан
+        return queryset
+
+class LogNumberNullFilter(admin.SimpleListFilter):
+    title = _('Номер в журнале')  # Отображаемое имя фильтра
+    parameter_name = 'log_number_null'  # Имя параметра в URL
+
+    def lookups(self, request, model_admin):
+        return (
+            ('yes', _('-')),  # Отображаемое имя для "Пусто"
+            ('no', _('№')),  # Отображаемое имя для "Не пусто"
+        )
+
+    def queryset(self, request, queryset):
+        if self.value() == 'yes':
+            return queryset.filter(log_number__isnull=True)  # Фильтруем по null
+        if self.value() == 'no':
+            return queryset.filter(log_number__isnull=False)  # Фильтруем по не null
+        return queryset
+
+class NaumenNumberNullFilter(admin.SimpleListFilter):
+    title = _('Номер Naumen')  # Отображаемое имя фильтра
+    parameter_name = 'number_naumen_null'  # Имя параметра в URL
+
+    def lookups(self, request, model_admin):
+        return (
+            ('yes', _('-')),  # Отображаемое имя для "Пусто"
+            ('no', _('RP')),  # Отображаемое имя для "Не пусто"
+        )
+
+    def queryset(self, request, queryset):
+        if self.value() == 'yes':
+            return queryset.filter(number_naumen__isnull=True)  # Фильтруем по null
+        if self.value() == 'no':
+            return queryset.filter(number_naumen__isnull=False)  # Фильтруем по не null
+        return queryset
+
+class ELKNumberNullFilter(admin.SimpleListFilter):
+    title = _('Номер ЕЛК')  # Отображаемое имя фильтра
+    parameter_name = 'number_elk_null'  # Имя параметра в URL
+
+    def lookups(self, request, model_admin):
+        return (
+            ('yes', _('-')),  # Отображаемое имя для "Пусто"
+            ('no', _('#')),  # Отображаемое имя для "Не пусто"
+        )
+
+    def queryset(self, request, queryset):
+        if self.value() == 'yes':
+            return queryset.filter(number_elk__isnull=True)  # Фильтруем по null
+        if self.value() == 'no':
+            return queryset.filter(number_elk__isnull=False)  # Фильтруем по не null
+        return queryset
 
 
 class LogbookAdmin(admin.ModelAdmin):
@@ -11,70 +86,11 @@ class LogbookAdmin(admin.ModelAdmin):
     list_display = ('log_number', 'status', 'date_of_request', 'date_of_receipt', 'authority', 'number_naumen', 'number_elk', 'ogv', 'amount',
     'net_number')
     list_display_links = ('log_number',)
-    # readonly_fields = ('date_of_request', 'number_naumen', 'number_elk', 'ogv', 'platform', 'net_number')
+    readonly_fields = ('amount',)
     search_fields = ('log_number', 'number_naumen', 'number_elk', 'abonents__owner__full_name', 'abonents__client__client_name', 'ogv')
-    # list_filter = ('status', 'authority', 'amount', 'net_number')
+    list_filter = (StatusFilter, 'authority', 'net_number', LogNumberNullFilter, NaumenNumberNullFilter, ELKNumberNullFilter)
     date_hierarchy = 'date_of_request'
 
-    # list_display = ('log_number', 'date_of_request', 'date_of_receipt', 'authority', 'number_naumen', 'number_elk', 'ogv', 'amount', 'net_number')
-    # list_display_links = ('log_number',)
-    # readonly_fields = ('date_of_request', 'number_naumen', 'number_elk', 'ogv', 'platform', 'net_number', 'updated_at', 'workers', 'clients')
-    # search_fields = ('log_number', 'number_naumen', 'number_elk', 'abonents__owner__full_name', 'abonents__client__client_name')
-    # # list_filter = ('city_of_install',)
-    #
-    # raw_id_fields = ['zapros', ]
-    #
-    # # Разделяем абонентов на список сотрудников и список клиентов
-    # @staticmethod
-    # def get_abonents_str(abonents):
-    #     workers = ''
-    #     clients = ''
-    #     # Проходимся по каждому выбранному абоненту
-    #     for abonent in abonents:
-    #         # Получаем фио
-    #         worker = abonent.owner.full_name
-    #         workers += worker + ', '
-    #         # Получаем имя клиента
-    #         client = abonent.client.client_name
-    #         clients += client + ', '
-    #     workers = workers.strip()
-    #     # Удаляем последнюю запятую
-    #     try:
-    #         if workers[len(workers)-1] == ',':
-    #             workers = workers[:len(workers)-1]
-    #     except Exception as e:
-    #         print(f'Не удалось убрать запятую для сотрудников: {e}')
-    #     clients = clients.strip()
-    #     # Удаляем последнюю запятую
-    #     try:
-    #         if clients[len(clients)-1] == ',':
-    #             clients = clients[:len(clients)-1]
-    #     except Exception as e:
-    #         print(f'Не удалось убрать запятую для клиентов: {e}')
-    #     return workers, clients
-    #
-    #
-    # def save_model(self, request, obj, form, change):
-    #     if form.is_valid():
-    #         for req in NewReq.objects.all():
-    #             if obj.zapros.number_naumen:
-    #                 if req.number_naumen == obj.zapros.number_naumen:
-    #                     obj.date_of_request = req.date
-    #                     obj.number_naumen = req.number_naumen
-    #                     obj.number_elk = req.number_elk
-    #                     obj.platform = req.platform
-    #                     obj.net_number = req.net_number
-    #                     obj.ogv = req.ogv
-    #                     # obj.amount = req.amount
-    #                     try:
-    #                         workers, clients = self.get_abonents_str(obj.abonents.all())
-    #                         obj.workers = workers
-    #                         obj.clients = clients
-    #                     except Exception as e:
-    #                         print(f'Не удалось разобрать абонентов: {e}.\nПовторите попытку!')
-    #         obj.save()
-    #     else:
-    #         print('Форма не валид!')
 
 admin.site.register(Authority)
 admin.site.register(Logbook, LogbookAdmin)
