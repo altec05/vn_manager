@@ -64,17 +64,20 @@ class Logbook(models.Model):
 
     def save(self, *args, **kwargs):
         # Валидация amount перед сохранением
-        if self.amount < 1:
-            raise ValidationError("Количество dst должно быть больше 1!")
+        # if self.amount < 1:
+        #     raise ValidationError("Количество dst должно быть больше 1!")
 
         if self.date_of_receipt and self.status == 'released':
             self.status = 'received'
 
-        # Заполняем amount количеством абонентов
-        self.amount = self.abonents.count()
-
         # Сначала сохраняем объект, чтобы получить id
         super().save(*args, **kwargs)
+
+        # Теперь, когда объект сохранен и имеет id, можно получить количество абонентов
+        self.amount = self.abonents.count()
+
+        # Сохраняем объект еще раз, чтобы обновить поле amount
+        super().save(update_fields=['amount'])  # Сохраняем только amount, чтобы избежать рекурсии
 
         # # Валидация количества абонентов после сохранения и установления связи
         # if self.abonents.count() != self.amount:
