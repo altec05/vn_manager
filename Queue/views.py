@@ -4,7 +4,6 @@ from django.db.models import Prefetch
 from django.views.generic import ListView, DetailView, CreateView, UpdateView, DeleteView
 from django.urls import reverse
 from django.http import HttpResponseRedirect
-
 from Owners.models import NewAbonent
 from .models import NewRecipient
 from .forms import NewRecipientForm, RecipientFilterForm
@@ -69,7 +68,7 @@ class NewRecipientDetailView(DetailView):
         return super().get_queryset().select_related('request').prefetch_related(
             Prefetch(
                 'request__abonents',
-                queryset=NewAbonent.objects.select_related('client')  # Оптимизируем связь NewAbonent с Client
+                queryset=NewAbonent.objects.select_related('client', 'owner')  # Оптимизируем связь NewAbonent с Client
             )
         )
 
@@ -77,21 +76,22 @@ class NewRecipientDetailView(DetailView):
         context = super().get_context_data(**kwargs)
         recipient = self.get_object()
         clients = []
+        abonents = []
 
         try:
             if recipient.request:
                 for abonent in recipient.request.abonents.all():
                     clients.append(abonent.client.client_name)
+                    abonents.append(abonent.owner.full_name)
         except AttributeError:
             # Обрабатываем случай, когда request is None
             clients = []  # Или какое-то другое значение по умолчанию
+            abonents = []
             # Можно добавить логирование ошибки
             print(f"Ошибка: request is None для NewRecipient с id={recipient.id}")
 
-        # for abonent in recipient.request.abonents.all():
-        #     clients.append(abonent.client.client_name)
-
         context['clients'] = clients
+        context['abonents'] = abonents
         return context
 
 class NewRecipientCreateView(CreateView):
@@ -114,7 +114,6 @@ class NewRecipientCreateView(CreateView):
 class NewRecipientUpdateView(UpdateView):
     model = NewRecipient
     template_name = 'Queue/newrecipient_update.html'
-    # fields = ['status', 'date', 'receiving_time', 'request', 'note']
     form_class = NewRecipientForm
     success_url = reverse_lazy('Queue:newrecipient_list')
 
@@ -122,62 +121,53 @@ class NewRecipientUpdateView(UpdateView):
         return super().get_queryset().select_related('request').prefetch_related(
             Prefetch(
                 'request__abonents',
-                queryset=NewAbonent.objects.select_related('client')
+                queryset=NewAbonent.objects.select_related('client', 'owner')
             )
         )
 
     def get_object(self, queryset=None):
-        """
-        Получает объект, который нужно обновить.
-        Необходимо для правильной работы UpdateView.
-        """
         return get_object_or_404(NewRecipient, pk=self.kwargs['pk'])
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         recipient = self.get_object()
         clients = []
+        abonents = []
 
         try:
             if recipient.request:
                 for abonent in recipient.request.abonents.all():
                     clients.append(abonent.client.client_name)
+                    abonents.append(abonent.owner.full_name)
         except AttributeError:
-            # Обрабатываем случай, когда request is None
-            clients = []  # Или какое-то другое значение по умолчанию
-            # Можно добавить логирование ошибки
+            clients = []
+            abonents = []
             print(f"Ошибка: request is None для NewRecipient с id={recipient.id}")
 
-        # for abonent in recipient.request.abonents.all():
-        #     clients.append(abonent.client.client_name)
-
         context['clients'] = clients
+        context['abonents'] = abonents
         return context
 
     def get_form_kwargs(self):
-        """
-        Передает объект в форму.  Это позволяет форме инициализироваться
-        данными из существующей модели.
-        """
         kwargs = super().get_form_kwargs()
-        kwargs['instance'] = self.get_object()  # Передаем экземпляр объекта в форму
+        kwargs['instance'] = self.get_object()
         return kwargs
-
-    # def get_success_url(self):
-    #     """Redirect to the Logbook's change page in Django Admin."""
-    #     instance = self.get_object()
-    #     # Check if status has changed to 'completed' for redirection
-    #     if self.object.status == 'completed':
-    #         return reverse("admin:Issuance_logbook_change", args=[instance.request.id])
-    #     else:
-    #         return reverse_lazy('Queue:newrecipient_list')
 
     def form_valid(self, form):
         instance = self.get_object()
         old_status = instance.status
-        new_recipient = form.save()
+        new_recipient = form.save(commit=False)  # Сохраняем форму, но не коммитим изменения в базу данных сразу
 
-        # Redirect to Logbook change page only if status changed to "completed" AND it was not already "completed"
+        # Всегда обновляем поля из request, если request существует
+        if new_recipient.request:
+            logbook_entry = new_recipient.request
+            new_recipient.number_naumen = logbook_entry.number_naumen
+            new_recipient.number_elk = logbook_entry.number_elk
+            new_recipient.ogv = logbook_entry.ogv
+            new_recipient.amount = logbook_entry.amount
+
+        new_recipient.save()  # Сохраняем изменения в базе данных
+
         if old_status != 'completed' and new_recipient.status == 'completed':
             self.success_url = reverse("admin:Issuance_logbook_change", args=[new_recipient.request.id])
         else:

@@ -4,8 +4,6 @@ from django.core.exceptions import ValidationError
 # from Request.models import NewReq, Platform, ViPNetNetNumber
 from Request.models import NewReq
 from Owners.models import NewAbonent, Platform, ViPNetNetNumber
-# from Queue.models import NewRecipient
-
 
 class Authority(models.Model):
     name = models.CharField(max_length=255, verbose_name='Наименование', unique=True)
@@ -54,36 +52,18 @@ class Logbook(models.Model):
             return f"№ Б/Н {self.status} по запросу {self.number_naumen} от {self.date_of_request.strftime('%d.%m.%Y')} для {self.ogv}, {self.amount} шт."
         else:
             return f"№ Б/Н {self.status} по запросу для {self.ogv}, {self.amount} шт."
-        # return "№ %s выдан %s для %s, %s шт." % (self.log_number, self.date_of_receipt, self.ogv, self.amount)
 
-    # def clean(self):
-    #     if int(str(self.amount)) < 1:
-    #         raise ValidationError({'amount': "Количество dst должно быть больше 1!"})
-    #     if self.abonents.count() != self.amount:
-    #         raise ValidationError({'amount': "Количество dst должно совпадать с количеством абонентов."})
 
     def save(self, *args, **kwargs):
-        # Валидация amount перед сохранением
-        # if self.amount < 1:
-        #     raise ValidationError("Количество dst должно быть больше 1!")
-
         if self.date_of_receipt and self.status == 'released':
             self.status = 'received'
 
         # Сначала сохраняем объект, чтобы получить id
         super().save(*args, **kwargs)
 
-        # Теперь, когда объект сохранен и имеет id, можно получить количество абонентов
+    def update_amount(self):
         self.amount = self.abonents.count()
-
-        # Сохраняем объект еще раз, чтобы обновить поле amount
-        super().save(update_fields=['amount'])  # Сохраняем только amount, чтобы избежать рекурсии
-
-        # # Валидация количества абонентов после сохранения и установления связи
-        # if self.abonents.count() != self.amount:
-        #     print(self.abonents)
-        #     print(self.amount)
-        #     raise ValidationError({'amount': "Количество dst должно совпадать с количеством абонентов."})
+        self.save(update_fields=['amount'])
 
     class Meta:
         ordering = ['-log_number', '-date_of_request', 'status', '-date_of_receipt', '-number_naumen', '-number_elk']

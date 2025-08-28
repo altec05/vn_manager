@@ -12,12 +12,6 @@ class NewRecipientForm(forms.ModelForm):
         label='Предполагаемая дата получения',
         required=False
     )
-    # date = forms.DateField(
-    #     widget=forms.DateInput(format='%d.%m.%Y', attrs={'type': 'date'}),
-    #     input_formats=['%d.%m.%Y', '%Y-%m-%d'],
-    #     label='Предполагаемая дата получения',
-    #     required=False
-    # )
     objs = Logbook.objects.filter(log_number__isnull=True)
     if len(objs) < 1:
         objs = Logbook.objects.all()
@@ -31,10 +25,11 @@ class NewRecipientForm(forms.ModelForm):
     class Meta:
         model = NewRecipient
         fields = ['status', 'request', 'number_naumen', 'number_elk', 'date', 'receiving_time', 'ogv', 'amount', 'note']
+
         widgets = {
             'number_naumen': forms.TextInput(attrs={'readonly': 'readonly'}),
             'number_elk': forms.TextInput(attrs={'readonly': 'readonly'}),
-            'ogv': forms.Textarea(attrs={'readonly': 'readonly', 'rows': 2}),
+            'ogv': forms.Textarea(attrs={'readonly': 'readonly', 'rows': 1}),
             # 'date': DatePickerInput(attrs={'type': 'date'}),  # HTML5 Date Input
             'receiving_time': forms.TimeInput(attrs={'type': 'time'}),  # HTML5 Time Input
             # 'ogv': forms.TextInput(),

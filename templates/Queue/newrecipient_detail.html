@@ -30,7 +30,16 @@
                             <li>Нет клиентов</li>
                         {% endfor %}
                     </ol>
+                <p class="card-text"><b>Владельцы:</b></p>
+                    <ol>
+                        {% for abonent in abonents %}
+                            <li>{{ abonent }}</li>
+                        {% empty %}
+                            <li>Нет владельцев</li>
+                        {% endfor %}
+                    </ol>
                 <p class="card-text"><b>Примечание:</b> {{ recipient.note|default:"-" }}</p>
+                <p class="card-text"><b>Запись создана:</b> {{ recipient.created_at }}</p>
             </div>
         </div>
 

@@ -1,5 +1,5 @@
 from django.db import models
-from  Request.models import NewReq
+from Request.models import NewReq
 from Issuance.models import Logbook, Authority
 from django.core.exceptions import ValidationError
 from django.urls import reverse

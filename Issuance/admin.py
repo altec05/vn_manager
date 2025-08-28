@@ -91,6 +91,10 @@ class LogbookAdmin(admin.ModelAdmin):
     list_filter = (StatusFilter, 'authority', 'net_number', LogNumberNullFilter, NaumenNumberNullFilter, ELKNumberNullFilter)
     date_hierarchy = 'date_of_request'
 
+    def save_related(self, request, form, formsets, change):
+        super().save_related(request, form, formsets, change)
+        form.instance.update_amount()  # Обновляем amount после сохранения связанных объектов
+
 
 admin.site.register(Authority)
 admin.site.register(Logbook, LogbookAdmin)
