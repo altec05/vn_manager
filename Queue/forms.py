@@ -1,6 +1,7 @@
 from django import forms
 from .models import NewRecipient
 from Issuance.models import Logbook
+# from Issuance.models import Logbook
 from bootstrap_datepicker_plus.widgets import DatePickerInput
 
 class NewRecipientForm(forms.ModelForm):

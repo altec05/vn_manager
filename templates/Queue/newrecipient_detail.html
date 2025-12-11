@@ -22,6 +22,7 @@
                 <p class="card-text"><b>Время:</b> {{ recipient.receiving_time|default_if_none:"__:__" }}</p>
                 <p class="card-text"><b>Заявитель:</b> {{ recipient.ogv }}</p>
                 <p class="card-text"><b>Всего dst:</b> {{ recipient.amount }}</p>
+                <p class="card-text"><b>Платформа:</b> {{ platform }}</p>
                 <p class="card-text"><b>Клиенты:</b></p>
                     <ol>
                         {% for client in clients %}

@@ -49,6 +49,7 @@ INSTALLED_APPS = [
     'Request',
     'Queue',
     'Owners',
+    'Licenses',
     "debug_toolbar",
     'django_bootstrap5',
     "bootstrap_datepicker_plus",
@@ -138,10 +139,10 @@ ru_formats.DATETIME_FORMAT = 'd.m.Y - H:i:s'
 # https://docs.djangoproject.com/en/5.1/howto/static-files/
 
 STATIC_URL = '/static/'
-# STATIC_ROOT = os.path.join(BASE_DIR, 'static')
-STATICFILES_DIRS = [
-        BASE_DIR / 'static',  # Или путь к вашей папке static
-    ]
+STATIC_ROOT = os.path.join(BASE_DIR, 'static')
+# STATICFILES_DIRS = [
+#         BASE_DIR / 'static',  # Или путь к вашей папке static
+#     ]
 
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')

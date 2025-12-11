@@ -8,29 +8,37 @@ from Owners.models import NewAbonent
 from .models import NewRecipient
 from .forms import NewRecipientForm, RecipientFilterForm
 
-
 class NewRecipientListView(ListView):
     model = NewRecipient
     template_name = 'Queue/newrecipient_list.html'
     context_object_name = 'recipients'
-    paginate_by = 10  # Добавьте пагинацию, если нужно
+    paginate_by = 10
 
     def get_queryset(self):
         queryset = super().get_queryset()
-        #  При первом открытии страницы применяем фильтр "Не выдано"
-        if not self.request.GET:
-            queryset = queryset.exclude(status='completed')
-            self.form = RecipientFilterForm(initial={'status': 'not_completed'})  # Фильтр при загрузке страницы
-        else:
-            self.form = RecipientFilterForm(self.request.GET)
-            if self.form.is_valid():
-                status = self.form.cleaned_data.get('status')
 
-                if status == 'not_completed':
-                    queryset = queryset.exclude(status='completed')
-                elif status:
-                    queryset = queryset.filter(status=status)
+        # Создаем изменяемую копию GET-параметров
+        form_data = self.request.GET.copy()
 
+        # Если параметр 'status' отсутствует в GET-запросе,
+        # устанавливаем его значение по умолчанию 'not_completed'.
+        # Это сработает при первом открытии страницы (без GET-параметров)
+        # и при пагинации, если пользователь ранее не выбирал другой фильтр.
+        if 'status' not in form_data:
+            form_data['status'] = 'not_completed'
+
+        # Инициализируем форму с нашей (возможно, модифицированной) копией GET-параметров
+        self.form = RecipientFilterForm(form_data)
+
+        if self.form.is_valid():
+            status = self.form.cleaned_data.get('status')
+
+            if status == 'not_completed':
+                queryset = queryset.exclude(status='completed')
+            elif status and status != '':  # '' означает, что фильтр по статусу не применяется
+                queryset = queryset.filter(status=status)
+            # Если status == '', то никаких дополнительных фильтров по статусу не применяется,
+            # и queryset остается базовым (или уже отфильтрованным по другим параметрам, если они есть).
 
         return queryset
 
@@ -40,11 +48,11 @@ class NewRecipientListView(ListView):
         context['filter_form'] = self.form  # Передайте форму в шаблон
 
         # Получаем номер текущей страницы
-        page_number = self.request.GET.get('page')
-        if not page_number:
-            page_number = 1
-        else:
+        page_number = self.request.GET.get('page', 1)
+        try:
             page_number = int(page_number)
+        except ValueError:
+            page_number = 1
 
         # Вычисляем начальный номер строки
         start_row_number = (page_number - 1) * self.paginate_by + 1
@@ -57,6 +65,70 @@ class NewRecipientListView(ListView):
             'completed': 'status-completed',
         }
         return context
+
+# class NewRecipientListView(ListView):
+#     model = NewRecipient
+#     template_name = 'Queue/newrecipient_list.html'
+#     context_object_name = 'recipients'
+#     paginate_by = 10  # Добавьте пагинацию, если нужно
+#
+#     def get_queryset(self):
+#         queryset = super().get_queryset()
+#
+#         self.form = RecipientFilterForm(self.request.GET)  # Всегда инициализируем форму с GET-параметрами
+#
+#         if self.form.is_valid():
+#             status = self.form.cleaned_data.get('status')
+#
+#             if status == 'not_completed':
+#                 queryset = queryset.exclude(status='completed')
+#             elif status and status != 'all':  # Добавим проверку на 'all' если он есть в форме
+#                 queryset = queryset.filter(status=status)
+#         elif not self.request.GET:  # Если GET-параметров нет (первый вход)
+#             # Применяем фильтр "Не выдано" по умолчанию
+#             queryset = queryset.exclude(status='completed')
+#             self.form = RecipientFilterForm(
+#                 initial={'status': 'not_completed'})  # Устанавливаем начальное значение в форме
+#
+#         # #  При первом открытии страницы применяем фильтр "Не выдано"
+#         # if not self.request.GET:
+#         #     queryset = queryset.exclude(status='completed')
+#         #     self.form = RecipientFilterForm(initial={'status': 'not_completed'})  # Фильтр при загрузке страницы
+#         # else:
+#         #     self.form = RecipientFilterForm(self.request.GET)
+#         #     if self.form.is_valid():
+#         #         status = self.form.cleaned_data.get('status')
+#         #
+#         #         if status == 'not_completed':
+#         #             queryset = queryset.exclude(status='completed')
+#         #         elif status:
+#         #             queryset = queryset.filter(status=status)
+#
+#         return queryset
+#
+#
+#     def get_context_data(self, **kwargs):
+#         context = super().get_context_data(**kwargs)
+#         context['filter_form'] = self.form  # Передайте форму в шаблон
+#
+#         # Получаем номер текущей страницы
+#         page_number = self.request.GET.get('page', 1)  # Используем get с дефолтным значением
+#         try:
+#             page_number = int(page_number)
+#         except ValueError:
+#             page_number = 1
+#
+#         # Вычисляем начальный номер строки
+#         start_row_number = (page_number - 1) * self.paginate_by + 1
+#         context['start_row_number'] = start_row_number
+#
+#         # Добавляем словарь с классами статусов в контекст
+#         context['status_classes'] = {
+#             'released': 'status-released',
+#             'pending': 'status-pending',
+#             'completed': 'status-completed',
+#         }
+#         return context
 
 class NewRecipientDetailView(DetailView):
     model = NewRecipient
@@ -77,6 +149,7 @@ class NewRecipientDetailView(DetailView):
         recipient = self.get_object()
         clients = []
         abonents = []
+        platform = recipient.request.platform
 
         try:
             if recipient.request:
@@ -92,6 +165,7 @@ class NewRecipientDetailView(DetailView):
 
         context['clients'] = clients
         context['abonents'] = abonents
+        context['platform'] = platform
         return context
 
 class NewRecipientCreateView(CreateView):
@@ -133,6 +207,8 @@ class NewRecipientUpdateView(UpdateView):
         recipient = self.get_object()
         clients = []
         abonents = []
+        platform = recipient.request.platform
+
 
         try:
             if recipient.request:
@@ -146,6 +222,7 @@ class NewRecipientUpdateView(UpdateView):
 
         context['clients'] = clients
         context['abonents'] = abonents
+        context['platform'] = platform
         return context
 
     def get_form_kwargs(self):

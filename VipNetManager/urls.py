@@ -33,6 +33,7 @@ urlpatterns = [
     # path('Request/', include('Request.urls', 'Request')),
     path('Issuance/', include('Issuance.urls', 'Issuance')),
     path('Owners/', include('Owners.urls', 'Owners')),
+    path('Licenses/', include('Licenses.urls', 'Licenses')),
 
 ]+ static(settings.STATIC_URL, document_root=settings.STATIC_ROOT) + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT) + debug_toolbar_urls()
 

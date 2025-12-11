@@ -1,14 +1,23 @@
 from django.contrib import admin
 from .models import ClientName, Owner, NewAbonent, Platform, ViPNetNetNumber
-# from Request.admin import NewReqInline
 
-# class OwnerAdmin(admin.ModelAdmin):
-#     inlines = [
-#         NewReqInline,
-#     ]
 
-admin.site.register(ClientName)
-admin.site.register(Owner)
-admin.site.register(NewAbonent)
+@admin.register(NewAbonent)
+class NewAbonentAdmin(admin.ModelAdmin):
+    autocomplete_fields = ['owner', 'client']
+    list_display = ('owner', 'client')
+    search_fields = ('owner__full_name', 'client__client_name')
+    save_on_top = True
+
+@admin.register(Owner)
+class OwnerAdmin(admin.ModelAdmin):
+    list_display = ('full_name',)
+    search_fields = ('full_name',)
+
+@admin.register(ClientName)
+class ClientNameAdmin(admin.ModelAdmin):
+    list_display = ('client_name',)
+    search_fields = ('client_name',)
+
 admin.site.register(Platform)
 admin.site.register(ViPNetNetNumber)

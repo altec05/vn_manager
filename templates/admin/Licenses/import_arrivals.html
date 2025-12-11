@@ -1,0 +1,32 @@
+{% extends "admin/base_site.html" %}
+{% load i18n static %}
+
+{% block content %}
+  <h1>{{ title }}</h1>
+
+  <form method="post" enctype="multipart/form-data" style="margin-top: 15px;">
+    {% csrf_token %}
+    <table>
+      {{ form.as_table }}
+    </table>
+    <input type="submit" value="Загрузить">
+    <a href="../">Отмена</a>
+  </form>
+
+  <div style="margin-top:20px;">
+    <p>Ожидаемые заголовки столбцов (рус/eng):</p>
+    <ul>
+      <li>date / дата — дата поступления (формат dd.mm.YYYY или ISO)</li>
+      <li>request_number / номер заявки</li>
+      <li>network_number / № сети</li>
+      <li>organization_name / наименование организации</li>
+      <li>inn / ИНН</li>
+      <li>valid_until / срок действия лицензии (необязательно)</li>
+      <li>license_object / объект лицензии</li>
+      <li>quantity / количество</li>
+      <li>uploaded / загружено (Да/Нет или True/False)</li>
+      <li>uploaded_date / дата загрузки (если uploaded = Да)</li>
+      <li>note / примечание</li>
+    </ul>
+  </div>
+{% endblock %}

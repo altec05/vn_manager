@@ -5,8 +5,8 @@
 {% load django_bootstrap5 %}
 {% bootstrap_css %}
 {% load queue_extras %}
+{% load pagination_tags %}
 
-{% load queue_extras %}
 <style>
     .status-released {
         background-color: #f8d7da !important;
@@ -38,7 +38,6 @@
 <div class="container-fluid">
     <div class="row">
         <div class="col-md-3 mt-3">
-<!--            <h5>Фильтр</h5>-->
             <form method="get">
                 {% bootstrap_form filter_form %}
                 <button type="submit" class="btn btn-sm btn-warning">Отфильтровать</button>
@@ -88,7 +87,6 @@
                     <td style="text-align: left;" class="col-ogv">{{ recipient.ogv }}</td>
                     <td style="text-align: left;" class="col-clients">
                         {% for abonent in recipient.request.abonents.all %}
-<!--                            {{ forloop.counter }}. {{ abonent.client.client_name }}<br>-->
                             {{ forloop.counter }}. {{ abonent.owner.full_name }}<br>
                         {% endfor %}
                     </td>
@@ -110,23 +108,33 @@
         {% if is_paginated %}
         <nav aria-label="Page navigation">
             <ul class="pagination">
+                {# Стрелка "назад" #}
                 {% if page_obj.has_previous %}
                 <li class="page-item">
-                    <a class="page-link" href="?page={{ page_obj.previous_page_number }}" aria-label="Previous">
+                    <a class="page-link" href="?{% for key, value in request.GET.items %}{{ key }}={{ value }}&{% endfor %}page={{ page_obj.previous_page_number }}" aria-label="Previous">
                         <span aria-hidden="true">&laquo;</span>
                     </a>
                 </li>
                 {% endif %}
-                {% for num in page_obj.paginator.page_range %}
-                    {% if page_obj.number == num %}
-                        <li class="page-item active"><a class="page-link" href="#">{{ num }}</a></li>
-                    {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
-                        <li class="page-item"><a class="page-link" href="?page={{ num }}">{{ num }}</a></li>
+
+                {# Список страниц, сгенерированный get_page_list #}
+                {% get_page_list page_obj 2 2 as pages_to_show %}
+                {% for p in pages_to_show %}
+                    {% if p %} {# Если это номер страницы #}
+                        {% if p == page_obj.number %} {# Текущая страница #}
+                            <li class="page-item active"><a class="page-link" href="#">{{ p }}</a></li>
+                        {% else %} {# Другие страницы (включая первую и последнюю) #}
+                            <li class="page-item"><a class="page-link" href="?{% for key, value in request.GET.items %}{{ key }}={{ value }}&{% endfor %}page={{ p }}">{{ p }}</a></li>
+                        {% endif %}
+                    {% else %} {# Если это None (троеточие) #}
+                        <li class="page-item disabled"><span class="page-link">…</span></li>
                     {% endif %}
                 {% endfor %}
+
+                {# Стрелка "вперед" #}
                 {% if page_obj.has_next %}
                 <li class="page-item">
-                    <a class="page-link" href="?page={{ page_obj.next_page_number }}" aria-label="Next">
+                    <a class="page-link" href="?{% for key, value in request.GET.items %}{{ key }}={{ value }}&{% endfor %}page={{ page_obj.next_page_number }}" aria-label="Next">
                         <span aria-hidden="true">&raquo;</span>
                     </a>
                 </li>

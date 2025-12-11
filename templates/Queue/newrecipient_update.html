@@ -26,6 +26,13 @@
 
         <div class="card mt-3">
             <div class="card-body">
+                <h5 class="card-title">Платформа</h5>
+                    {{ platform }}
+            </div>
+        </div>
+
+        <div class="card mt-3">
+            <div class="card-body">
                 <h5 class="card-title">Клиенты</h5>
                 <ul>
                     {% for client in clients %}
@@ -39,7 +46,7 @@
 
         <div class="card mt-3">
             <div class="card-body">
-                <h5 class="card-title">Клиенты</h5>
+                <h5 class="card-title">Владельцы</h5>
                 <ul>
                     {% for abonent in abonents %}
                         <li>{{ abonent }}</li>
