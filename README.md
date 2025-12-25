@@ -1,3 +1,18 @@
+# Установка
+python -m venv .venv
+
+source .venv/bin/activate  # Linux/Mac
+.venv\Scripts\activate  # Windows
+
+pip install -r requirements.txt
+
+cp .env.example .env
+
+... отредактируйте .env
+python manage.py migrate
+python manage.py runserver
+  
+# Обзор
 Проект, предназначенный для ведения реестра выпущенных ключей ViPNet Client.
 
 Разработка на Python 3, Django 5, Sqlite 3.
