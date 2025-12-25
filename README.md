@@ -11,6 +11,10 @@ cp .env.example .env
 ... отредактируйте .env
 python manage.py migrate
 python manage.py runserver
+
+# Запуск готового проекта на Windows
+D:\Python\Projects\Django\ViPNet_Manager\.venv\Scripts\activate
+python D:\Python\Projects\Django\ViPNet_Manager\VipNetManager\manage.py runserver
   
 # Обзор
 Проект, предназначенный для ведения реестра выпущенных ключей ViPNet Client.
