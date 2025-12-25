@@ -1,0 +1,12 @@
+{% extends "admin/change_list.html" %}
+{% load i18n admin_urls %}
+
+{% block object-tools-items %}
+    {{ block.super }}
+    <li>
+        {# Ссылка на наше представление импорта, определенное в Owners/urls.py #}
+        <a href="{% url 'Owners:import_abonents' %}" class="addlink">
+            {% trans "Импорт абонентов из Excel" %}
+        </a>
+    </li>
+{% endblock %}

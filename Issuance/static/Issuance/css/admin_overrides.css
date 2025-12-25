@@ -1,0 +1,17 @@
+/* Переопределяем ширину для контейнера select2, используемого в autocomplete_fields */
+.select2-container--admin-autocomplete {
+    width: 100% !important; /* !important нужен, чтобы перебить инлайновый стиль */
+}
+
+/* Корректировка для выравнивания кнопки "Добавить" */
+.related-widget-wrapper {
+    display: flex;       /* Включаем flexbox для контейнера виджета и кнопки */
+    align-items: center; /* Выравниваем элементы по центру по вертикали */
+    gap: 10px;           /* Добавляем небольшой отступ между select2 и кнопкой */
+    flex-grow: 1;        /* Позволяем wrapper'у занимать доступное пространство */
+}
+
+/* Убеждаемся, что select2 внутри wrapper'а тоже расширяется */
+.related-widget-wrapper .select2-container {
+    flex-grow: 1; /* Позволяем select2 занимать всю доступную ширину внутри flex-контейнера */
+}

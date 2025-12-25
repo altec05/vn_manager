@@ -1,0 +1,40 @@
+# Виртуальное окружение
+venv/
+.venv/
+env/
+ENV/
+
+# БД
+*.sqlite3
+db.sqlite3
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+.DS_Store
+
+# Логи
+*.log
+
+# Среды разработки
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Переменные окружения
+.env
+.env.local
+.env.production
+
+# Медиа (если не хотите включать в релиз)
+/media/*
+
+# Артефакты сборки
+*.egg-info/
+dist/
+build/
+*.egg

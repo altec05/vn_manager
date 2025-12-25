@@ -1,5 +1,6 @@
 from django.contrib import admin
 from .models import License, Arrival
+from Issuance.models import Logbook
 from django.contrib import admin, messages
 from django.shortcuts import render, redirect
 from django.urls import path
@@ -13,17 +14,27 @@ class ArrivalInline(admin.TabularInline):
     save_on_top = True
     model = Arrival
     extra = 0
+    # readonly_fields = ('date', 'request_number', 'network_number', 'organization_name', 'inn', 'valid_until', 'license_object', 'quantity', 'uploaded', 'uploaded_date', 'note')
     readonly_fields = ()
     fields = ('date', 'request_number', 'network_number', 'organization_name', 'inn', 'valid_until', 'license_object', 'quantity', 'uploaded', 'uploaded_date', 'note')
     # При сохранении из inline admin будет вызван save() модели Arrival
 
+class IssuanceInline(admin.TabularInline):
+    save_on_top = True
+    model = Logbook
+    extra = 0
+    readonly_fields = ('net_number', 'log_number', 'number_naumen', 'number_elk', 'ogv', 'amount', 'platform')
+    fields = ('net_number', 'log_number', 'number_naumen', 'number_elk', 'ogv', 'amount', 'platform')
+
 @admin.register(License)
 class LicenseAdmin(admin.ModelAdmin):
     list_display = ('network_number', 'organization_name', 'inn', 'license_object', 'total_received', 'used', 'free', 'last_replenishment')
-    search_fields = ('organization_name', 'inn', 'license_object', 'network_number')
-    list_filter = ( 'network_number', 'license_object')
-    inlines = [ArrivalInline]
+    list_display_links = ('organization_name',)
+    search_fields = ('organization_name', 'inn', 'license_object', 'network_number', 'total_received')
+    list_filter = ( 'network_number', 'last_replenishment', 'free', 'license_object')
+    inlines = [ArrivalInline, IssuanceInline]
     save_on_top = True
+
 
     change_list_template = 'admin/licenses/license_change_list.html'  # шаблон со кнопкой импорта
 

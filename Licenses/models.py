@@ -12,6 +12,7 @@ class License(models.Model):
     organization_name = models.CharField(max_length=255, verbose_name='Наименование организации')
     inn = models.PositiveBigIntegerField(verbose_name='ИНН')
     license_object = models.CharField(max_length=255, verbose_name='Объект лицензии')
+    valid_until = models.DateField(verbose_name='Срок действия лицензии', blank=True, null=True)
 
 
     total_received = models.PositiveIntegerField(
@@ -33,19 +34,32 @@ class License(models.Model):
     class Meta:
         verbose_name = 'Лицензия'
         verbose_name_plural = 'Лицензии'
-        unique_together = ('inn', 'organization_name', 'license_object')
+        unique_together = ('inn', 'organization_name', 'license_object', 'valid_until')
+        ordering = ['organization_name', 'inn', 'license_object']
 
     def __str__(self):
-        if not self.note is None:
-            return f"№ {self.network_number} / {self.organization_name} (ИНН: {self.inn}) — {self.license_object} = {self.free} [{self.note}]"
+        if not self.note is None and self.note.strip() != '':
+            if self.valid_until:
+                return f"№ {self.network_number} / {self.organization_name} (ИНН: {self.inn}) — {self.license_object}. /// Свободно: {self.free} /// До: {self.valid_until.strftime('%d.%m.%Y')} /// [{self.note}]"
+            else:
+                return f"№ {self.network_number} / {self.organization_name} (ИНН: {self.inn}) — {self.license_object}. /// Свободно: {self.free} /// [{self.note}]"
         else:
-            return f"№ {self.network_number} / {self.organization_name} (ИНН: {self.inn}) — {self.license_object} = {self.free} [-]"
+            if self.valid_until:
+                return f"№ {self.network_number} / {self.organization_name} (ИНН: {self.inn}) — {self.license_object}. /// Свободно: {self.free} /// До: {self.valid_until.strftime('%d.%m.%Y')}"
+            else:
+                return f"№ {self.network_number} / {self.organization_name} (ИНН: {self.inn}) — {self.license_object}. /// Свободно: {self.free}"
 
     def recalc_free(self):
         # свободно = поступило - использовано (может быть < 0)
         self.free = (self.total_received or 0) - (self.used or 0)
 
+    def clean(self):
+        if self.organization_name:
+            # Убираем пробелы по краям и кавычки
+            self.organization_name = self.organization_name.replace('"', '').replace("'", "").strip()
+
     def save(self, *args, **kwargs):
+        self.clean()  # вызываем очистку перед сохранением
         self.recalc_free()
         super().save(*args, **kwargs)
 
@@ -75,11 +89,16 @@ class Arrival(models.Model):
     class Meta:
         verbose_name = 'Поступление'
         verbose_name_plural = 'Поступления'
+        ordering = ['-date', 'request_number', 'organization_name']
 
     def __str__(self):
         return f"{self.request_number} / {self.organization_name} / {self.license_object} / {self.quantity}"
 
     def clean(self):
+        super().clean()  # вызвать валидацию родителя
+        if self.organization_name:
+            self.organization_name = self.organization_name.replace('"', '').replace("'", "").strip()
+
         # Валидация: uploaded <-> uploaded_date
         if self.uploaded:
             if not self.uploaded_date:
@@ -102,6 +121,7 @@ class Arrival(models.Model):
             inn=self.inn,
             organization_name=self.organization_name,
             license_object=self.license_object,
+            valid_until=self.valid_until,
         ).first()
 
         if license_obj is None:
@@ -111,6 +131,7 @@ class Arrival(models.Model):
                 organization_name=self.organization_name,
                 inn=self.inn,
                 license_object=self.license_object,
+                valid_until=self.valid_until,
                 total_received=0,
                 used=0,
             )

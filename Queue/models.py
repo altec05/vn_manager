@@ -25,10 +25,10 @@ class NewRecipient(models.Model):
     ogv = models.TextField(max_length=255, verbose_name='Заявитель', blank=True, null=True)
     amount = models.PositiveIntegerField(verbose_name='Всего dst', default=1)
     # request = models.ForeignKey(NewReq, on_delete=models.CASCADE, verbose_name='Запрос')
-    request = models.ForeignKey(Logbook, on_delete=models.CASCADE, verbose_name='Запрос')
+    request = models.ForeignKey(Logbook, on_delete=models.CASCADE, verbose_name='Запрос', null=True)
     # received = models.BooleanField(default=False, verbose_name='Получено')
     note = models.TextField(verbose_name='Примечание', blank=True)
-    created_at = models.DateTimeField(auto_now_add=True, verbose_name='Дата создания записи')
+    created_at = models.DateTimeField(auto_now_add=True, null=True, verbose_name='Дата создания записи')
 
     class Meta:
         ordering = ['-created_at', '-date']

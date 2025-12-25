@@ -1,0 +1,23 @@
+{% extends 'admin/base.html' %}
+{% load static %}
+
+{% block extrahead %}
+    {{ block.super }}
+    <style>
+        /* Стили для контейнера верхнего ползунка */
+        .changelist-top-scrollbar-container {
+            overflow-x: scroll; /* Делаем его прокручиваемым по горизонтали */
+            height: 17px; /* Высота, чтобы ползунок был виден. Можете настроить. */
+            margin-bottom: -1px; /* Немного перекрывает нижний элемент для более гладкого перехода */
+            background-color: var(--body-bg); /* Цвет фона, чтобы он соответствовал админке */
+            border-bottom: 1px solid var(--border-color); /* Небольшая граница для разделения */
+        }
+        /* Внутренний div должен быть достаточно узким, чтобы не быть видимым,
+           но достаточно широким, чтобы вызвать полосу прокрутки. */
+        .changelist-top-scrollbar-container > div {
+            width: 100%; /* Изначальная ширина, будет переопределена JS */
+            height: 1px; /* Минимальная высота, просто чтобы было содержимое */
+        }
+    </style>
+    <script src="{% static 'js/admin_top_scrollbar.js' %}"></script>
+{% endblock %}

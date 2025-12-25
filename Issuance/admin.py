@@ -5,6 +5,8 @@ from django.core.exceptions import ValidationError
 from django import forms
 from Request.models import NewReq
 from Licenses.models import License
+from Queue.models import NewRecipient
+from Owners.models import ViPNetNetNumber
 from django.db.models import Q
 from django.utils.translation import gettext_lazy as _
 import unicodedata
@@ -13,37 +15,39 @@ class LogbookForm(forms.ModelForm):
     class Meta:
         model = Logbook
         fields = '__all__'
-        widgets = {
-            'license': forms.Select(attrs={'style': 'min-width: 400px; width: auto;'}),
-            'abonents': forms.Select(attrs={'style': 'min-width: 400px; width: auto;'}),
-        }
 
     def __init__(self, *args, **kwargs):
-        # get_form в Admin будет передавать сюда request и obj (если мы их добавим)
         request = kwargs.pop('request', None)
         obj = kwargs.pop('obj', None)
 
-        # Важно вызвать базовый конструктор сразу — иначе self.fields не создастся
         super().__init__(*args, **kwargs)
 
-        # Переменная, в которой будем хранить числовой номер сети (int), если удастся получить
         net_value = None
+        platform = None
 
-        # 1) Если редактируем существующую запись (change view), берем net_number из obj
-        if obj and getattr(obj, 'net_number', None):
-            # obj.net_number — это FK на ViPNetNetNumber
-            try:
-                # берем текстовое поле vipnet_net_number и конвертируем в int
-                net_value = int(obj.net_number.vipnet_net_number)
-            except (AttributeError, ValueError, TypeError):
-                # если что-то не так — оставляем net_value = None
-                net_value = None
+        # 1) Если редактируем существующую запись (change view)
+        if obj:
+            if getattr(obj, 'net_number', None):
+                try:
+                    net_value = int(obj.net_number.vipnet_net_number)
+                except (AttributeError, ValueError, TypeError):
+                    pass
+            if getattr(obj, 'platform', None):
+                try:
+                    platform_name = obj.platform.platform_name
+                    if platform_name == 'Android (Планшет)' or platform_name == 'Android (Мобильный клиент)':
+                        platform = 'Android'
+                    elif platform_name == 'Windows':
+                        platform = 'Windows'
+                    else:
+                        platform = platform_name # или None, если другие не нужны
+                except (AttributeError, ValueError, TypeError):
+                    pass
 
         # 2) Если форма привязана к POST или есть initial данные (add view или при валидации)
-        if net_value is None:
+        if net_value is None: # Если не удалось получить из obj, пробуем из данных
             data = self.data if self.is_bound else self.initial
             if data:
-                # в POST/initial поле net_number содержит PK связанного ViPNetNetNumber
                 net_pk = data.get('net_number') or data.get('net_number_id')
                 if net_pk:
                     try:
@@ -51,16 +55,24 @@ class LogbookForm(forms.ModelForm):
                         if net_obj:
                             net_value = int(net_obj.vipnet_net_number)
                     except (ValueError, TypeError):
-                        net_value = None
+                        pass
 
-        # 3) Устанавливаем queryset для поля license в зависимости от net_value
+        # 3) Устанавливаем queryset для поля license
         if net_value is not None:
-            # фильтруем License по целому значению network_number
-            self.fields['license'].queryset = License.objects.filter(network_number=net_value)
+            network_filter_condition = Q(network_number=net_value)
+            if platform == 'Android':
+                license_filter_condition = Q(license_object__icontains="Android")
+                combined_filter = network_filter_condition & license_filter_condition
+                self.fields['license'].queryset = License.objects.filter(combined_filter)
+            elif platform == 'Windows':
+                license_filter_condition = Q(license_object__icontains="Windows")
+                combined_filter = network_filter_condition & license_filter_condition
+                self.fields['license'].queryset = License.objects.filter(combined_filter)
+            else:
+                self.fields['license'].queryset = License.objects.filter(network_number=net_value)
         else:
-            # если номер сети неизвестен (например, при первом открытии формы создания),
-            # показываем пустой список, чтобы пользователь сначала выбрал сеть.
-            # При желании можно вернуть все лицензии: License.objects.all()
+            # Если номер сети неизвестен, можно либо показать пустой queryset, либо все лицензии.
+            # Сейчас показаны все, но лучше фильтровать после выбора сети.
             self.fields['license'].queryset = License.objects.all()
 
 class StatusFilter(admin.SimpleListFilter):
@@ -142,11 +154,19 @@ class LogbookAdmin(admin.ModelAdmin):
     save_on_top = True
     form = LogbookForm
 
-    autocomplete_fields = ['license', 'abonents']  # включаем автокомплит для поля license
+    # inlines = [NewRecipientInline,]
+
+    # autocomplete_fields = ['license', 'abonents']  # включаем автокомплит для поля license
+    autocomplete_fields = ['abonents',]
+
+    class Media:
+        css = {
+            'all': ('Issuance/css/admin_overrides.css',)
+        }
 
     list_display = (
-        'log_number', 'status', 'date_of_request', 'date_of_receipt', 'authority',
-        'number_naumen', 'number_elk', 'ogv', 'amount', 'net_number', 'use_license'
+        'log_number', 'use_license', 'status', 'date_of_request', 'date_of_receipt', 'authority',
+        'number_naumen', 'number_elk', 'ogv', 'amount', 'net_number'
     )
     list_display_links = ('log_number',)
     readonly_fields = ('amount',)
@@ -178,6 +198,9 @@ class LogbookAdmin(admin.ModelAdmin):
         При сохранении через админку сначала выполняем валидацию модели (full_clean),
         чтобы показать понятные ошибки пользователю. Затем сохраняем через super().
         Модель Logbook должна в своём save/delete содержать логику изменения License.used.
+
+        Сохраняем объект и после этого обновляем абонентов,
+        а также показываем информационное сообщение.
         """
         try:
             obj.full_clean()
@@ -188,6 +211,38 @@ class LogbookAdmin(admin.ModelAdmin):
             # Пробрасываем ValidationError — Django Admin покажет ошибки в форме
             raise
         super().save_model(request, obj, form, change)
+
+        # Теперь обновляем абонентов и считаем, сколько затронуто
+        updated_count = 0
+        if obj.abonents.exists():
+            for abonent in obj.abonents.all():
+                updated = False
+                if not abonent.net_number:
+                    abonent.net_number = obj.net_number
+                    updated = True
+                if not abonent.platform:
+                    abonent.platform = obj.platform
+                    updated = True
+                if updated:
+                    abonent.save()
+                    updated_count += 1
+
+                    # Показываем сообщение, если были обновления
+                    if updated_count > 0:
+                        if updated_count == 1:
+                            message = "Обновлён 1 абонент: заполнены поля «Сеть» и «Платформа»."
+                        elif updated_count < 5:
+                            message = f"Обновлены {updated_count} абонента: заполнены поля «Сеть» и «Платформа»."
+                        else:
+                            message = f"Обновлено {updated_count} абонентов: заполнены поля «Сеть» и «Платформа»."
+                        messages.info(request, message)
+                    else:
+                        # Можно не показывать, или показать, что всё уже было заполнено
+                        messages.info(request, "Абоненты уже имели заполненные поля «Сеть» и «Платформа». Поля абонентов не были обновлены.")
+                        # pass
+                else:
+                    messages.info(request, "Абоненты уже имели заполненные поля «Сеть» и «Платформа». Поля абонентов не были обновлены.")
+
 
     def delete_model(self, request, obj):
         """

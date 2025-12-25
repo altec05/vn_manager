@@ -1,0 +1,55 @@
+{% extends 'admin/base.html' %}
+{% load static %}
+
+{% block title %}Результаты импорта{% endblock %}
+
+{% block content %}
+<div id="content-main">
+    <h1>Результаты импорта абонентов</h1>
+    {% if messages %}
+        <ul class="messagelist">
+            {% for message in messages %}
+                <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
+            {% endfor %}
+        </ul>
+    {% endif %}
+
+    <p>Всего строк в файле (с учетом заголовка, если есть): <strong>{{ total_rows }}</strong></p>
+    <p>Успешно обработано: <strong>{{ successful_rows }}</strong></p>
+    <p>Строк с ошибками: <strong>{{ error_rows }}</strong></p>
+
+    {% if has_errors %}
+        <h2>Строки, содержащие ошибки:</h2>
+        <table class="table table-bordered">
+            <thead>
+                <tr>
+                    <th>Номер строки</th>
+                    <th>Ошибка</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for error in errors %}
+                    <tr>
+                        <td>{{ error.line }}</td>
+                        <td>{{ error.message }}</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% endif %}
+
+    {% if successful_rows > 0 and pre_confirm %}
+        <h2>Данные готовы к подтверждению.</h2>
+        <form method="post" action="{% url 'Owners:import_abonents_confirm' %}">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-success">Подтвердить импорт</button>
+        </form>
+    {% elif not pre_confirm %}
+        <p>Импорт завершен. Данные сохранены в базу данных.</p>
+    {% else %}
+        <p>Нет успешно обработанных строк для подтверждения.</p>
+    {% endif %}
+    {# ИСПРАВЛЕНО: используем переменную из контекста #}
+    <p><a href="{{ admin_changelist_url }}" class="button">Вернуться к списку абонентов</a></p>
+</div>
+{% endblock %}

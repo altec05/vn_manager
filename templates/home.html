@@ -45,7 +45,7 @@
             </li>
 
             <li class="list-group-item">
-                <a href="http://127.0.0.1:8000/admin/Issuance/logbook/">
+                <a href="http://127.0.0.1:8000/admin/Issuance/logbook/?status=not_received">
                     Закрыть запрос после выдачи (admin)
                 </a>
             </li>
@@ -53,6 +53,12 @@
             <li class="list-group-item">
                 <a href="{% url 'Issuance:logbook_list' %}">
                     Выгрузка журнала выдачи в Excel
+                </a>
+            </li>
+
+             <li class="list-group-item">
+                <a href="http://127.0.0.1:8000/admin/Licenses/">
+                    Лицензии и поступления
                 </a>
             </li>
 
